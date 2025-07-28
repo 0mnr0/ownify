@@ -10,6 +10,7 @@ body {background: #111; height: 600px; width: 330px; color: white;}
     font-family: "Tektur", sans-serif;
     font-optical-sizing: auto;
 	position: relative;
+	outline: none;
 }
 
 body * {
@@ -36,8 +37,10 @@ body * {
 }
 
 .AuthWindow h1 {transition: none}
-.AuthWindow input {background: black; padding: 10px; border: solid 2px lime; width: 85%; border-radius: 10px; color: white}
-.AuthWindow button {margin-top: 40px; background: #111; padding: 10px; border: solid 2px white; border-radius: 10px; color: white}
+.AuthWindow input {background: black; padding: 10px; transition: all .3s; border: solid 2px #ff007d; width: 85%; border-radius: 10px; color: white;}
+.AuthWindow input:hover {border-color: white;}
+.AuthWindow button {margin-top: 40px; background: #111; padding: 10px; transition: all .3s; border: solid 2px #ff8ec5; border-radius: 10px; color: white}
+.AuthWindow button:hover {border-color: white}
 
 h1, p {width: fit-content; margin-bottom: 0px}
 
@@ -122,11 +125,11 @@ div.WhiteListEditor {
 }
 
 div.WhiteListEditor:hover button {
-	border: solid 1px lime;
+	border: solid 1px white;
 }
 
 div.WhiteListEditor button {
-	padding: 10px; transition: all .3s; border: solid 1px green; cursor: pointer; padding-left: 10%; border-radius: 10px; color: white; background: black; width: 80%;
+	padding: 10px; transition: all .3s; border: solid 1px #ff007d; cursor: pointer; padding-left: 10%; border-radius: 10px; color: white; background: black; width: 80%;
 }
 div.WhiteListEditor img {
 	position: absolute; left: 25%; width: 24px; height: 24px; top: 50%; cursor: pointer; transform: translateY(-50%) scale(0.9);
@@ -187,13 +190,13 @@ div.TypeSelector span.Title .description {
 }
 
 img.resetUniqKey:hover {
-	border: solid 1px lime;
+	border: solid 1px #ff1588;
 }
 img.resetUniqKey {
 	height: 40px;
 	width: 40px;
 	background: black;
-	border: solid 1px green;
+	border: solid 1px #a50051;
 	transition: all .3s;
 	border-radius: 10px;
 	padding: 8px;
@@ -222,7 +225,7 @@ div.ListEditorScreen div.topbar {
 	height: 50px;
 	background: #00000078;
 	padding-bottom: 5px;
-	border-bottom: solid 1px lime;
+	border-bottom: solid 1px #ff007d;
 }
 
 div.ListEditorScreen div.topbar div img {
@@ -245,17 +248,20 @@ div.ListEditorScreen div.topbar div span {
 }
 
 div.ListEditorScreen div.topActivity, div.ListEditorScreen div.RulesList {
-	padding: 10px;
-	padding-top: 0px;
-	gap: 10px;
-	width: 100%;
-	margin-top: 10px;
+    padding: 10px 2px;
+    padding-top: 0px;
+    padding-right: 4px;
+    gap: 10px;
+    width: 100%;
+    margin-top: 10px;
 }
 
+div.ListEditorScreen div.topActivity {padding: 0px 10px 10px 10px !important}
+
 div.ListEditorScreen div.topActivity input, div.ListEditorScreen div.RulesList input {
-	padding: 10px;
+	padding: 0px 10px;
 	background: black;
-	border: solid 2px green;
+	border: solid 2px #b30075;
 	border-radius: 10px;
 	outline: none;
 	color: white;
@@ -269,9 +275,9 @@ div.ListEditorScreen div.topActivity input:focus {
 
 div.ListEditorScreen div.topActivity button, div.ListEditorScreen div.RulesList button {
 	aspect-ratio: 1/1;
-	height: 48px;
+	height: 43px;
 	border-radius: 10px;
-	border: solid 2px green;
+	border: solid 2px #b30075;
 	transition: all .3s;
 	background: #000000a3;
 	color: white;
@@ -291,20 +297,65 @@ div.ListEditorScreen span.split {
 div.ListEditorScreen div.RulesList {
   scrollbar-width: none;
   -ms-overflow-style: none;
+  transition: all .3s
 }
 div.ListEditorScreen div.RulesList::-webkit-scrollbar {
   display: none;
 }
 
-div.ListEditorScreen div.RulesList {flex-direction: column; max-height: 500px; overflow: auto;}
+div.ListEditorScreen div.RulesList {
+	scrollbar-width: none;
+	-ms-overflow-style: none;
+}
 
-div.ListEditorScreen div.RulesList div.Rule {transition: all .5s, opacity .4s}
+div.ListEditorScreen div.RulesList {
+    max-height: 100%;
+    overflow-x: scroll;
+    overflow-y: visible;
+    flex-direction: row;
+    gap: 0px !important;
+    flex-wrap: wrap;
+    justify-content: space-around;
+}
+
+div.ListEditorScreen div.RulesList div.Rule {
+    transition: all .5s, opacity .4s;
+    align-items: center;
+    flex-direction: column;
+    width: 48%;
+    height: 100px;
+    flex-wrap: nowrap !important;
+    position: relative;
+    background: black;
+    border-radius: 20px;
+    padding: 10px;
+    margin-left: 1%;
+    margin-bottom: 7px;
+}
+
+div.ListEditorScreen div.RulesList div.Rule img.ICONSITE.dropcolored {filter: grayscale(1)}
 
 div.ListEditorScreen div.RulesList div.Rule, div.ListEditorScreen div.RulesList {
 	display: flex; gap: 5px
 }
 
-div.ListEditorScreen div.RulesList div.Rule input {height: 40px; border: solid 1px black; outline: none;}
-div.ListEditorScreen div.RulesList div.Rule input:hover { border: solid 1px gray; }
-div.ListEditorScreen div.RulesList div.Rule input:focus, div.ListEditorScreen div.RulesList div.Rule button:hover { border: solid 1px white; }
-div.ListEditorScreen div.RulesList div.Rule button {height: 40px; aspect-ratio: auto; font-size: larger;}
+div.ListEditorScreen div.RulesList div.Rule input {height: 40px; text-align: center; border: solid 1px transparent; outline: none; font-size: smaller;}
+div.ListEditorScreen div.RulesList div.Rule:hover input { border: solid 1px gray; }
+div.ListEditorScreen div.RulesList div.Rule input:focus { border: solid 1px white;}
+div.ListEditorScreen div.RulesList div.Rule button {height: 40px; aspect-ratio: auto; font-size: larger; opacity: 0;}
+div.ListEditorScreen div.RulesList div.Rule:hover button { opacity: 0.75;}
+div.ListEditorScreen div.RulesList div.Rule button:hover { border: solid 1px white; opacity: 1;}
+div.ListEditorScreen div.RulesList div.Rule button {
+    position: absolute;
+    border: solid 1px transparent;
+    scale: 0.75;
+    right: 0px;
+    top: 0px;
+    border-radius: 20px;
+}
+div.ListEditorScreen div.RulesList div.Rule img.ICONSITE {
+    height: 45px;
+    aspect-ratio: 1/1;
+    object-fit: contain;
+    border-radius: 10px;
+}

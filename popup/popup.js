@@ -5,6 +5,7 @@ let isEditorOpened = false;
 let WhiteListSites = undefined;
 
 let CurrentTabUrl = '';
+const SUBTITLE_TEXT = 'PROXIFY URSELF! - by ';
 
 let animationBlock = document.querySelector('span.animationBlock');
 let toggleButton = document.getElementById('toggle');
@@ -18,6 +19,9 @@ const WhiteListEditor = find('div.WhiteListEditor');
 const EditorWindow = find('div.ListEditorScreen');
 const EditorTextField = find('div.ListEditorScreen div.topActivity input');
 const EditorButton = find('div.ListEditorScreen div.topActivity button');
+const subtitle = find('p.subtitle');
+subtitle.textContent = SUBTITLE_TEXT;
+
 
 let AuthWindow = find('div.AuthWindow');
 
@@ -170,9 +174,17 @@ function UpdateWhiteList(animate){
 		let WhiteSite = document.createElement('div');
 		WhiteSite.className = 'Rule';
 		WhiteSite.innerHTML = `
+			<img alt="" crossorigin="anonymous" src=${GetSiteIcon(OriginalSiteName)} class="ICONSITE">
 			<input type="text" placeholder="${OriginalSiteName}" value="${OriginalSiteName}" onchange="alert()"></input>
 			<button> 🗑️ </button>
 		`;
+		const IconSite = WhiteSite.querySelector('img');
+		
+		runLater(() => {
+			try{ let darkImg = isDarkImage(IconSite);
+			if (darkImg < 40) {  IconSite.filter = 'invert(1) hue-rotate(180deg)' } } catch(e) {}
+		}, 75*i);
+		
 		let InputField = WhiteSite.querySelector('input');
 		WhiteSite.querySelector('button').addEventListener('click', async () => {
 			WhiteListSites = WhiteListSites.filter(item => item !== OriginalSiteName);
@@ -189,12 +201,14 @@ function UpdateWhiteList(animate){
 			chrome.runtime.sendMessage({ action: "reloadSettings:withVpnReload" });
 		});
 		
-		if (animate && i < 25) { 
+		if (animate && i < 26) { 
+			IconSite.filter='brightness(0.75)';
 			WhiteSite.opacity = 0;
 			WhiteSite.left = '40px';
 			runLater(() => {
 				WhiteSite.opacity = 1;
 				WhiteSite.left = 0;
+				IconSite.filter='';
 			}, 20*i)
 		}
 		DisplayList.appendChild(WhiteSite);
@@ -220,7 +234,7 @@ WhiteListEditor.addEventListener('click', async () => {
 	MainWindow.filter = (isEditorOpened ? '' : 'blur(12px)');
 	MainWindow.scale = (isEditorOpened ? 1 : 0.98);
 	runLater(() => { MainWindow.opacity = (isEditorOpened ? 0 : 1); }, (isEditorOpened ? 0 : 100));
-	spanBackground.opacity = (isEditorOpened ? 0.35 : 0.5); // 0.5 - Default Value
+	spanBackground.opacity = (isEditorOpened ? 0.35 : 0.75); // 0.5 - Default Value
 	EditorWindow.left = (isEditorOpened ? 100 : 0)+"%";
 	
 	
@@ -244,19 +258,16 @@ EditorButton.onclick = async ()=>{
 	
 	if (WhiteListSites.indexOf(getCleanDomain(EditorTextField.value)) >= 0) {
 		const FoundedElement = DisplayList.querySelector(`div.Rule > input[value="${getCleanDomain(EditorTextField.value)}"]`).parentElement; if (FoundedElement===null) {return;}
-		const ElementInput = FoundedElement.querySelector('input');
 		DisplayList.scroll({
 		    top: FoundedElement.offsetTop - 10,
 		    left: 0,
 		    behavior: 'smooth'
 		});
-		ElementInput.border = 'solid 2px';
-		for (let i = 1; i < 5; i++) {
-			ElementInput.boxShadow = (i%2==0) ? 'white 0px 0px 10px 0px' : 'white 0px 0px 0px 0px';
+		for (let i = 1; i < 7; i++) {
+			FoundedElement.boxShadow = (i%2==1) ? 'inset white 0px 0px 10px 4px' : 'inset transparent 0px 0px 0px 0px';
 			await sleep(500);
 		}
-		ElementInput.border = ''; 
-		ElementInput.boxShadow = ''; 
+		FoundedElement.boxShadow = ''; 
 
 		return;
 	} 
@@ -292,6 +303,18 @@ find('img.resetUniqKey').onclick = () => {
 
 /////////////////////////////////////////////////////
 
+async function SubTitle_EasterEgg() {
+	for (let i = 0; i < 6; i++) {
+		const r = random(1,3);
+		subtitle.textContent = SUBTITLE_TEXT+(r==1 ? 'Miku!' : 'dsvl0');
+		await sleep(random(70, 10));
+	}
+	await sleep(800);
+	SubTitle_EasterEgg();
+}
+
+SubTitle_EasterEgg();
+
 
 function getCleanDomain(url) {
   try {
@@ -303,6 +326,41 @@ function getCleanDomain(url) {
       return null;
   }
 }
+
+function isDarkImage(imgElement) {
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+
+  canvas.width = imgElement.naturalWidth;
+  canvas.height = imgElement.naturalHeight;
+
+  ctx.drawImage(imgElement, 0, 0);
+
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+
+  let totalBrightness = 0;
+  let visiblePixelCount = 0;
+
+  for (let i = 0; i < imageData.length; i += 4) {
+    const r = imageData[i];
+    const g = imageData[i + 1];
+    const b = imageData[i + 2];
+    const a = imageData[i + 3];
+
+    // Пропускаем прозрачные пиксели
+    if (a < 10) continue;
+
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+    totalBrightness += brightness;
+    visiblePixelCount++;
+  }
+
+  if (visiblePixelCount === 0) return false; // нет видимых пикселей — не считаем тёмным
+
+  const average = totalBrightness / visiblePixelCount;
+  return average;
+}
+
 
 
 
@@ -328,6 +386,10 @@ chrome.runtime.onMessage.addListener((message, sender) => {
 
 function capitalizeFirstLetter(val) {
     return String(val).charAt(0).toUpperCase() + String(val).slice(1);
+}
+
+function GetSiteIcon(domain) {
+  return `https://www.google.com/s2/favicons?sz=256&domain=${domain}`;
 }
 
 
@@ -362,8 +424,12 @@ function StartAuth() {
 				FilteredJSON.host = parsedJson.host;
 				FilteredJSON.scheme = parsedJson.scheme;
 				FilteredJSON.port = parsedJson.UserExtensionId;
-				FilteredJSON.username = AITG(parsedJson.ServerAuth_UN);
-				FilteredJSON.password = AITG(parsedJson.ServerAuth_UP);
+				if (parsedJson.ServerAuth_UN !== undefined) {
+					FilteredJSON.username = AITG(parsedJson.ServerAuth_UN);
+				}
+				if (FilteredJSON.password !== undefined) {  
+					FilteredJSON.password = AITG(parsedJson.ServerAuth_UP);
+				}
 				await chrome.storage.local.set({ ServerData: FilteredJSON });
 				await chrome.runtime.sendMessage({ action: "reloadSettings" });
 				toggleButton.click();
@@ -385,7 +451,7 @@ function StartAuth() {
 	let ServerData = (await chrome.storage.local.get('ServerData')).ServerData;
 	loadLastType();
 	if (typeof ServerData === "undefined") {
-			StartAuth();
+		StartAuth();
 	}
 })();
 
