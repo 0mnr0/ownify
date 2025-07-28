@@ -1,0 +1,310 @@
+html {background: #333;}
+html {
+    display: flex;
+    justify-content: center;
+}
+body {background: #111; height: 600px; width: 330px; color: white;}
+
+* {
+	transition: all .5s ease-in-out;
+    font-family: "Tektur", sans-serif;
+    font-optical-sizing: auto;
+	position: relative;
+}
+
+body * {
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Old versions of Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome, Edge, Opera and Firefox */
+}
+
+.AuthWindow {
+    position: absolute;
+    z-index: 10;
+    height: 100%;
+    display: none;
+    flex-direction: column;
+    gap: 20px;
+    text-align: center;
+    align-items: center;
+    backdrop-filter: blur(10px);
+    justify-content: center;
+}
+
+.AuthWindow h1 {transition: none}
+.AuthWindow input {background: black; padding: 10px; border: solid 2px lime; width: 85%; border-radius: 10px; color: white}
+.AuthWindow button {margin-top: 40px; background: #111; padding: 10px; border: solid 2px white; border-radius: 10px; color: white}
+
+h1, p {width: fit-content; margin-bottom: 0px}
+
+.flex, .Flex {display: flex}
+.flex.vertical, .Flex.vertical {flex-direction: column}
+.flex.centered, .Flex.centered {align-items: center}
+
+h1.title {font-weight: 600; margin-top: 10px; font-size: xxx-large;}
+p.subtitle {color: #999; font-size: small; margin-top: 5px; }
+
+div.flex.vertical.centered {
+    height: 600px;
+	transition: all .5s;
+	z-index: 2;
+	left: 0px;
+    overflow: hidden;
+}
+
+div.proxyConnection {
+    min-height: 300px;
+    padding: 20px;
+    display: flex;
+    aspect-ratio: 1/1;
+    align-items: center;
+	position: relative;
+    justify-content: center;
+}
+
+div.proxyConnection button#toggle {
+    padding: 10px;
+    aspect-ratio: 1/1;
+    width: 50%;
+    height: 50%;
+    border-radius: 30px;
+    scale: 1.2;
+	z-index: 2;
+    background: black;
+    border: solid 3px red;
+    color: white;
+    box-shadow: 0 0 20px 2px #ff0000cc;
+}
+
+div.proxyConnection button#toggle.active {
+	box-shadow: 0 0 20px 2px #ff0000cc;
+}
+
+div.proxyConnection span.animationBlock {
+	position: absolute;
+	width: 50px;
+	height: 50px;
+	background: radial-gradient(transparent -30%, #00a800 35%, transparent 70%);
+	border-radius: 200px;
+	transition: all .65s ease-out, opacity .85s ease-out;
+	z-index: 1;
+	opacity: 0.75;
+	top: calc(50% - 25px);
+	left: calc(50% - 25px);
+}
+
+div.proxySelector {
+	z-index: 2;	
+	position: relative;
+	top: -40px;
+	opacity: 0.6;
+	cursor: pointer;
+}
+
+div.proxySelector img {
+	position: relative;
+	transition: all .3s ease;
+	left: 10px;
+	filter: brightness(1.15);
+}
+
+div.WhiteListEditor {
+    margin-top: -50px;
+    top: 30px;
+    z-index: 2;
+    justify-content: center;
+    width: 100%;
+    position: relative;
+}
+
+div.WhiteListEditor:hover button {
+	border: solid 1px lime;
+}
+
+div.WhiteListEditor button {
+	padding: 10px; transition: all .3s; border: solid 1px green; cursor: pointer; padding-left: 10%; border-radius: 10px; color: white; background: black; width: 80%;
+}
+div.WhiteListEditor img {
+	position: absolute; left: 25%; width: 24px; height: 24px; top: 50%; cursor: pointer; transform: translateY(-50%) scale(0.9);
+}
+
+
+span.background {
+    position: absolute;
+    height: 100%;
+    aspect-ratio: 1/1;
+	opacity: 0.5;
+    background: radial-gradient(#ff000069 20%, transparent 70%);
+    rotate: 90deg;
+    left: 50%;
+	transition: all .5s, filter 3s;
+    top: 40%;
+    transform: translate(-50%, 50%) scale(1.2);
+}
+
+
+div.TypeSelector {
+	position: relative; 
+	top: 10px;
+	overflow: hidden;
+	opacity: 0;
+	padding-top: 0px;
+	top: -30px;
+	z-index: 1;
+    display: flex;
+	transition: all .35s, opacity .25s;
+    flex-direction: column;
+	gap: 10px;
+	padding: 10px;
+	width: 100%;
+}
+
+div.TypeSelector span.Title {
+    display: flex;
+    flex-direction: column;
+    background: #333;
+	font-weight: 500;
+    padding: 5px 10px;
+    border-radius: 10px;
+    border: solid 2px gray;
+	transition: all .4s;
+	cursor: pointer;
+    width: 100%;
+}
+
+
+div.TypeSelector span.Title.active {
+	border: solid 2px lime;
+	box-shadow: 0px 0px 3px 1px #00ff00a3;
+}
+
+div.TypeSelector span.Title .description {
+    font-size: small; color: #999; font-weight: 400;
+}
+
+img.resetUniqKey:hover {
+	border: solid 1px lime;
+}
+img.resetUniqKey {
+	height: 40px;
+	width: 40px;
+	background: black;
+	border: solid 1px green;
+	transition: all .3s;
+	border-radius: 10px;
+	padding: 8px;
+	position: absolute;
+	z-index: 2;
+	bottom: 5px;
+	left: 5px;
+	cursor: pointer;
+}
+
+
+div.ListEditorScreen {
+    position: absolute;
+    z-index: 4;
+    left: 100%;
+    height: 100%;
+	width: 100%;
+    max-height: 600px;
+	transition: all .55s;
+    top: 0px;
+    overflow: auto;
+}
+
+div.ListEditorScreen div.topbar {
+	width: 100%;
+	height: 50px;
+	background: #00000078;
+	padding-bottom: 5px;
+	border-bottom: solid 1px lime;
+}
+
+div.ListEditorScreen div.topbar div img {
+	position: relative;
+	width: 35px; height: 35px;
+	margin-left: 5px; margin-top: 5px;
+	background: transparent;
+	padding: 6px;
+	border-radius: 7px;
+	transition: all .3s;
+}
+
+div.ListEditorScreen div.topbar div { cursor: pointer; width: 100%; }
+div.ListEditorScreen div.topbar div:hover img { background: #75757590; }
+
+div.ListEditorScreen div.topbar div span {
+	font-size: large;
+    display: flex; margin-top: 2px;
+    align-items: center; margin-left: 5px;
+}
+
+div.ListEditorScreen div.topActivity, div.ListEditorScreen div.RulesList {
+	padding: 10px;
+	padding-top: 0px;
+	gap: 10px;
+	width: 100%;
+	margin-top: 10px;
+}
+
+div.ListEditorScreen div.topActivity input, div.ListEditorScreen div.RulesList input {
+	padding: 10px;
+	background: black;
+	border: solid 2px green;
+	border-radius: 10px;
+	outline: none;
+	color: white;
+	transition: all .3s;
+	width: 100%;
+}
+
+div.ListEditorScreen div.topActivity input:focus {
+	border: solid 2px white;
+}
+
+div.ListEditorScreen div.topActivity button, div.ListEditorScreen div.RulesList button {
+	aspect-ratio: 1/1;
+	height: 48px;
+	border-radius: 10px;
+	border: solid 2px green;
+	transition: all .3s;
+	background: #000000a3;
+	color: white;
+	font-size: x-large;
+}
+
+div.ListEditorScreen div.topActivity button:hover {
+	border: solid 2px white;
+}
+
+div.ListEditorScreen span.split {
+	height: 1px;
+	background: gray;
+	width: 100%;
+}
+
+div.ListEditorScreen div.RulesList {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+div.ListEditorScreen div.RulesList::-webkit-scrollbar {
+  display: none;
+}
+
+div.ListEditorScreen div.RulesList {flex-direction: column; max-height: 500px; overflow: auto;}
+
+div.ListEditorScreen div.RulesList div.Rule {transition: all .5s, opacity .4s}
+
+div.ListEditorScreen div.RulesList div.Rule, div.ListEditorScreen div.RulesList {
+	display: flex; gap: 5px
+}
+
+div.ListEditorScreen div.RulesList div.Rule input {height: 40px; border: solid 1px black; outline: none;}
+div.ListEditorScreen div.RulesList div.Rule input:hover { border: solid 1px gray; }
+div.ListEditorScreen div.RulesList div.Rule input:focus, div.ListEditorScreen div.RulesList div.Rule button:hover { border: solid 1px white; }
+div.ListEditorScreen div.RulesList div.Rule button {height: 40px; aspect-ratio: auto; font-size: larger;}

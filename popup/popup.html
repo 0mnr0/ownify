@@ -1,0 +1,79 @@
+﻿<!DOCTYPE html>
+<head>
+	
+	<style>
+	@import url('https://fonts.googleapis.com/css2?family=Tektur:wght@400..900&display=swap');
+	</style>
+	<link rel="stylesheet" href="bootstrap.css"> </link>
+	<link rel="stylesheet" href="popup.css"> </link>
+	
+	<script src="core.js" defer></script>
+	<script src="accessorCore.js" defer></script>
+	<script src="popup.js" defer></script>
+</head>
+
+
+<body>
+	<span class="background"> </span>
+	<div class="flex vertical centered">
+		<div class="flex" style="align-items: center"> 
+			<h1 class="title"> Ownify </h1>
+			<img alt="🎉" id="brth" src="birthday.png" style="display: none; height: 40px; margin-top: 16px; margin-left: 10px; scale: 1.1">
+		</div>
+		<p class="subtitle"> Proxify URSELF! - By dsvl0</p>
+		
+		<div class="proxyConnection">
+			<span class="animationBlock"></span>
+			<button id="toggle">Enable VPN</button>
+		</div>	
+		<div class="proxySelector flex">
+			<p id="proxyMode"> Режим "WhiteList" </p>
+			<img class="arrow" src="arrow_down.svg"/>
+		</div>
+		<div class="WhiteListEditor flex">
+			<button class="LaaucnhListEditor"> Белый список </button>
+			<img class="pen" src="pen.svg"/>
+		</div>
+
+		<div class="TypeSelector">
+			<span class="Title" value="WhiteList"> WhiteList 
+				<span class="description"> VPN для определённого списка сайтов </span>
+			</span>
+				
+			<span class="Title" value="ON"> ON 
+				<span class="description"> VPN для всех сайтов </span>
+			</span>
+		</div>
+
+
+
+		<div class="AuthWindow">
+			<h1> Для продолжения введите код конфигурации: </h1>
+			<input type="text" placeholder="{ip: xxx, port: -1, username: dsvl0, password: xxx}"></text>
+			<button class="save"> Продолжить </button> 
+		</div>
+		
+
+		<img src="dns.svg" class="resetUniqKey" title="Редактирование конфигурации">
+		
+		
+	</div>
+	
+	<div class="ListEditorScreen flex vertical">
+		<div class="topbar">
+			<div class="flex activity">
+				<img src="arrow_back.svg">
+				<span> Белый список </span>
+			</div>
+		</div>
+	
+		<div class="topActivity flex">
+			<input type="text" id="siteInserter" placeholder="Пример: chatgpt.com"></input>
+			<button> + </button>
+		</div>
+		<span class="split"></span>
+		
+		<div class="RulesList"></div>
+	</div>
+	
+</body>
