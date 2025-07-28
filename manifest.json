@@ -18,7 +18,7 @@
     "default_popup": "popup/popup.html"
   },
   "icons": {
-    "48": "icons/icon48.webp"
+    "128": "icon.png"
   },
   "minimum_chrome_version": "110",
   "incognito": "split"
