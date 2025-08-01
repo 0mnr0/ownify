@@ -3,11 +3,16 @@
   "name": "SOCKS5 Proxy",
   "version": "1.0",
   "permissions": [
+    "privacy",
+	"scripting",
     "proxy",
     "storage",
 	"webRequest",
 	"webRequestAuthProvider",
-	"tabs"
+	"declarativeNetRequest",
+	"declarativeNetRequestWithHostAccess",
+	"tabs",
+	"<all_urls>"
   ],
   "host_permissions": ["<all_urls>"],
   "background": {

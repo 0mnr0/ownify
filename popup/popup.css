@@ -41,6 +41,7 @@ body * {
 .AuthWindow input:hover {border-color: white;}
 .AuthWindow button {margin-top: 40px; background: #111; padding: 10px; transition: all .3s; border: solid 2px #ff8ec5; border-radius: 10px; color: white}
 .AuthWindow button:hover {border-color: white}
+.AuthWindow button.cancelBtn {position: absolute; display: none; z-index: 4; bottom: 10px}
 
 h1, p {width: fit-content; margin-bottom: 0px}
 
@@ -189,10 +190,12 @@ div.TypeSelector span.Title .description {
     font-size: small; color: #999; font-weight: 400;
 }
 
-img.resetUniqKey:hover {
+img.openSettings:hover {
 	border: solid 1px #ff1588;
+	rotate: 45deg;
+	border-radius: 20px;
 }
-img.resetUniqKey {
+img.openSettings {
 	height: 40px;
 	width: 40px;
 	background: black;
@@ -359,3 +362,86 @@ div.ListEditorScreen div.RulesList div.Rule img.ICONSITE {
     object-fit: contain;
     border-radius: 10px;
 }
+
+
+div.settingsSection {
+	position: absolute;
+	z-index: 4;
+	top: 0px;
+	left: -100%;
+	width: 100%;
+	transition: all .56s;
+	height: 100%;
+}
+
+div.settingsSection .topPane {
+    flex-direction: row;
+	justify-content: space-between;
+    background: black;
+	align-items: center;
+    padding: 5px;
+	padding-left: 8px;
+	cursor: pointer;
+    gap: 5px;
+	max-height: 45px;
+}
+
+div.settingsSection .topPane:hover img {
+	background: #75757590
+}
+
+div.settingsSection .topPane img {
+	rotate: 180deg; 
+	width: 35px; 
+	padding: 6px;
+	border-radius: 10px;
+	transition: all .3s;
+	aspect-ratio: 1/1; background: transparent;
+}
+
+div.settingsSection .topPane span {
+	font-size: large;
+}
+
+div.settingsSection div.SettingsList {
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+div.settingsSection div.SettingsList div.setting div.main {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: bold;
+}
+
+div.settingsSection .setting {
+	background: black;
+	padding: 10px;
+	border-radius: 25px;
+}
+
+
+div.settingsSection div.SettingsList div.setting span.desc {
+	font-size: small;
+	color: gray;
+}
+
+div.settingsSection div.SettingsList span.split {
+    width: 100%;
+    height: 1px;
+    display: block;
+    background: gray;
+}
+
+div.settingsSection div.SettingsList button#authByte {
+    width: 100%;
+    padding: 6px; 
+	color: white;
+	background: transparent;
+	border: none;
+	border-radius: 12px
+}
+div.settingsSection div.SettingsList button#authByte:hover { background: #7373735e }

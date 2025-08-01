@@ -6,7 +6,9 @@
 	</style>
 	<link rel="stylesheet" href="bootstrap.css"> </link>
 	<link rel="stylesheet" href="popup.css"> </link>
+	<link rel="stylesheet" href="switch.css"> </link>
 	
+	<script src="settings.js" defer></script>
 	<script src="core.js" defer></script>
 	<script src="accessorCore.js" defer></script>
 	<script src="popup.js" defer></script>
@@ -52,10 +54,10 @@
 			<h1> Для продолжения введите код конфигурации: </h1>
 			<input type="text" placeholder="{ip: xxx, port: -1, username: dsvl0, password: xxx}"></text>
 			<button class="save"> Продолжить </button> 
+			<button class="cancelBtn"> Отмена </button> 
 		</div>
 		
-
-		<img src="dns.svg" class="resetUniqKey" title="Редактирование конфигурации">
+		<img src="settings.svg" class="openSettings" title="Открыть настройки">
 		
 		
 	</div>
@@ -76,5 +78,18 @@
 		
 		<div class="RulesList"></div>
 	</div>
+	
+	
+	<div class="settingsSection">
+		<div class="flex topPane">
+			<span> Настройки </span>
+			<img src="arrow_back.svg">
+		</div>
+		<span class="split"></span>
+		
+		<div class="SettingsList"></div>
+		
+	</div>
+		
 	
 </body>

@@ -4,6 +4,7 @@ let userAuthed = true;
 let isEditorOpened = false;
 let WhiteListSites = undefined;
 
+let isSettingsOpened = false;
 let CurrentTabUrl = '';
 const SUBTITLE_TEXT = 'PROXIFY URSELF! - by ';
 
@@ -20,6 +21,10 @@ const EditorWindow = find('div.ListEditorScreen');
 const EditorTextField = find('div.ListEditorScreen div.topActivity input');
 const EditorButton = find('div.ListEditorScreen div.topActivity button');
 const subtitle = find('p.subtitle');
+const SettingsIcon = find('img.openSettings');
+const SettingsScreen = find('div.settingsSection');
+const SettingsTopBar = find('div.settingsSection .topPane');
+const SettingsList = find('div.settingsSection .SettingsList');
 subtitle.textContent = SUBTITLE_TEXT;
 
 
@@ -202,13 +207,11 @@ function UpdateWhiteList(animate){
 		});
 		
 		if (animate && i < 26) { 
-			IconSite.filter='brightness(0.75)';
 			WhiteSite.opacity = 0;
 			WhiteSite.left = '40px';
 			runLater(() => {
 				WhiteSite.opacity = 1;
 				WhiteSite.left = 0;
-				IconSite.filter='';
 			}, 20*i)
 		}
 		DisplayList.appendChild(WhiteSite);
@@ -225,7 +228,6 @@ WhiteListEditor.addEventListener('click', async () => {
 		if (WhiteListSites.length != startLength) { await chrome.runtime.sendMessage({ action: "reloadSettings:withVpnReload" }); }
 		startLength = WhiteListSites.length;
 	}
-	
 	
 	
 	// isEditorOpened (со значением true) -> значит только будет открыт, а сейчас - false
@@ -283,8 +285,8 @@ find('div.ListEditorScreen div.topbar').onclick = () => {
 	WhiteListEditor.click();
 }
 document.addEventListener('keydown', function(event) {
-  if ((event.key === 'Escape' || event.key === 'Esc') && isEditorOpened) {
-	  WhiteListEditor.click();
+  if ((event.key === 'Escape' || event.key === 'Esc') && (isEditorOpened || isSettingsOpened)) {
+	  if (isSettingsOpened) { SettingsIcon.click(); } else {WhiteListEditor.click();}
       event.preventDefault();
   }
 });
@@ -297,11 +299,111 @@ window.addEventListener("unload", function () {
 })
 
 
-find('img.resetUniqKey').onclick = () => {
-	StartAuth();
+SettingsIcon.onclick = async () => {
+	SwitchSettings();
+	
+	if (isSettingsOpened) {
+		SettingsList.innerHTML = await GetActualSetting();
+		const settingsList = SettingsList.querySelectorAll('div.setting');
+		
+		
+		for (let i = 0; i < settingsList.length; i++) {
+			const setting = settingsList[i];
+			setting.right = '40px';
+			setting.opacity = 0;
+			
+			let SettingElement;
+			if (setting.querySelector('input')) {
+				SettingElement = setting.querySelector('input');
+				SettingElement.addEventListener('change', async() => {
+					let NewSetting = {};
+					const SettingElementID = SettingElement.id;
+					NewSetting[SettingElementID] = (SettingElement.type ==='checkbox' ? SettingElement.checked : SettingElement.value);
+					await chrome.storage.local.set( NewSetting );
+					await chrome.runtime.sendMessage({ action: "reloadInAppSettings" });
+				})
+			}
+			if (setting.querySelector('button')) {
+				SettingElement = setting.querySelector('button');
+				SettingElement.addEventListener('click', async() => {
+					if (SettingElement.id==='authByte') {
+						StartAuth(true);
+					}
+				})
+			}
+			runLater(() => {
+				setting.right = '0px';
+				setting.opacity = 1;
+			}, 50*i)
+			
+		}
+	}
+}
+
+async function GetActualSetting() {
+	let txt = `
+		<div class="setting">
+			<div class="main flex">
+				<label class="switch">
+					<input type="checkbox" class="settingAction" id="SETTING:anonimize" ${await GetBool('anonimize') ? 'checked' : ''}>
+					<span class="slider round"></span>
+				</label>
+				<span onclick="document.getElementById('SETTING:anonimize').click()"> Anonimize+ </span>
+			</div>
+			<span class="desc"> Скрывает разницу во веремени меж браузером и Proxy </span>
+		</div>
+		
+		<div class="setting">
+			<div class="main flex">
+				<label class="switch">
+					<input type="checkbox" class="settingAction" id="SETTING:FixWEBRTC" ${await GetBool('FixWEBRTC') ? 'checked' : ''}>
+					<span class="slider round"></span>
+				</label>
+				<span onclick="document.getElementById('SETTING:FixWEBRTC').click()"> Скрыть IP WebRTC </span>
+			</div>
+			<span class="desc"> Исправляет "Утечку" реального IP адреса из-за WebRTC </span>
+		</div>
+		
+		
+		<div class="setting">
+			<button id="authByte"> Изменить конфигурацию </button>
+		</div>
+	`
+	
+	return txt;
+}
+
+
+function SwitchSettings(){
+	isSettingsOpened = !isSettingsOpened;
+	
+	SettingsScreen.left = (isSettingsOpened ? 0 : -100)+'%';
+	MainWindow.right = '';
+	MainWindow.left = (isSettingsOpened ? MainWindow.realWidth/2 : 0)+'px';
+	MainWindow.filter = (isSettingsOpened ? 'blur(12px)' : '');
+	MainWindow.scale = (isSettingsOpened ? 0.98 : 1);
+	runLater(() => { MainWindow.opacity = (isSettingsOpened ? 0 : 1); }, (isSettingsOpened ? 100 : 0));
+	spanBackground.opacity = (isSettingsOpened ? 0.75 : 0.35); // 0.5 - Default Value
+}
+
+SettingsTopBar.onclick= async () => {
+	SwitchSettings();
 }
 
 /////////////////////////////////////////////////////
+
+async function GetBool(name) {
+	name = "SETTING:"+name;
+	let ret = (await chrome.storage.local.get(name))[name]
+	return ret === true;
+}
+
+async function GetString(name) {
+	let ret = (await chrome.storage.local.get(name))[name]
+	return ret === true;
+}
+
+
 
 async function SubTitle_EasterEgg() {
 	for (let i = 0; i < 6; i++) {
@@ -409,8 +511,9 @@ async function loadLastType() {
 }
 
 
-function StartAuth() {
-		userAuthed = false;
+function StartAuth(cancelable) {
+		if (isSettingsOpened) {SwitchSettings();}
+		if (!cancelable) { userAuthed = false; }
 		AuthWindow.display = "flex";
 		AuthWindow.zIndex = 10;
 		AuthWindow.backdropFilter = 'blur(10px)';
@@ -423,28 +526,33 @@ function StartAuth() {
 				const FilteredJSON = {};
 				FilteredJSON.host = parsedJson.host;
 				FilteredJSON.scheme = parsedJson.scheme;
-				FilteredJSON.port = parsedJson.UserExtensionId;
-				if (parsedJson.ServerAuth_UN !== undefined) {
-					FilteredJSON.username = AITG(parsedJson.ServerAuth_UN);
+				FilteredJSON.port = parsedJson.PCP;
+				if (parsedJson.PCN !== undefined) {
+					FilteredJSON.username = AITG(parsedJson.PCN);
 				}
-				if (FilteredJSON.password !== undefined) {  
-					FilteredJSON.password = AITG(parsedJson.ServerAuth_UP);
+				if (parsedJson.timeOffset !== undefined) {
+					FilteredJSON.timeOffset = parsedJson.timeOffset;
+				}
+				if (parsedJson.PCA !== undefined) {  
+					FilteredJSON.password = AITG(parsedJson.PCA);
 				}
 				await chrome.storage.local.set({ ServerData: FilteredJSON });
 				await chrome.runtime.sendMessage({ action: "reloadSettings" });
-				toggleButton.click();
-				AuthWindow.filter = '';
-				AuthWindow.opacity = 0;
-				AuthWindow.zIndex = -10;
-				runLater(() => {AuthWindow.display = 'none';}, 500);
+				window.location.reload();
 			} catch(e) {
 				alert("Неверный синтаксис");
 			}
 			ContinueButton.disabled = false;
-		});	
+		});
+	if (cancelable) {
+		AuthWindow.querySelector('.cancelBtn').display = 'block';
+		AuthWindow.querySelector('.cancelBtn').addEventListener('click', () => {
+			window.location.reload();
+		}) 
+	}
 }
 
-(async ()=>{
+(async ()=>{	
 	await chrome.runtime.sendMessage({ action: "getUrl" });
 	WhiteListSites = (await chrome.storage.local.get('WhiteListed')).WhiteListed;
 	if (typeof WhiteListSites !== 'undefined') {startLength = WhiteListSites.length; }
