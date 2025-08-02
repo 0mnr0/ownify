@@ -105,8 +105,13 @@ div.proxySelector {
 	z-index: 2;	
 	position: relative;
 	top: -40px;
-	opacity: 0.6;
+	opacity: 1;
 	cursor: pointer;
+}
+div.proxySelector p, div.proxySelector img {opacity: 0.6}
+
+div.proxySelector:hover img {
+	opacity: 0.8;
 }
 
 div.proxySelector img {

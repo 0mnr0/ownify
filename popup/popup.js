@@ -162,7 +162,8 @@ ConnectionTypes.forEach(connection => {
 	connection.addEventListener('click', async () => {
 		const type = connection.getAttribute('value').toLowerCase();
 		await chrome.storage.local.set({ type: type })
-		chrome.runtime.sendMessage({ action: "switchConnections" });		
+		chrome.runtime.sendMessage({ action: "switchConnections" });	
+		if (connectionType !== type) {runLater(() => proxySelector.click(), 50)}
 		setActiveConnectionType(type);
 	})
 }) 
@@ -499,11 +500,11 @@ function GetSiteIcon(domain) {
 
 
 function setActiveConnectionType(conType) {
-	console.log('setActiveConnectionType: ',conType);
 	proxyMode.textContent = `Режим "${capitalizeFirstLetter(conType)}"`
+	connectionType = conType;
 	ConnectionTypes.forEach(connection => {
 		(connection.getAttribute('value').toLowerCase() === conType) ? connection.classList.add('active') : connection.classList.remove('active');
-	})
+	});
 }
 
 async function loadLastType() {
