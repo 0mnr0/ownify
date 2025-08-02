@@ -8,6 +8,7 @@ let isSettingsOpened = false;
 let CurrentTabUrl = '';
 const SUBTITLE_TEXT = 'PROXIFY URSELF! - by ';
 
+const MainWindow = find('div.flex.vertical.centered');
 let animationBlock = document.querySelector('span.animationBlock');
 let toggleButton = document.getElementById('toggle');
 let spanBackground = find('span.background');
@@ -217,7 +218,6 @@ function UpdateWhiteList(animate){
 }
 
 
-const MainWindow = find('div.flex.vertical.centered');
 const DisplayList = find('div.ListEditorScreen div.RulesList');
 let startLength = 0;
 WhiteListEditor.addEventListener('click', async () => {

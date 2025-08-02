@@ -24,6 +24,7 @@ body * {
 }
 
 .AuthWindow {
+	top: 0px;
     position: absolute;
     z-index: 10;
     height: 100%;
@@ -31,6 +32,7 @@ body * {
     flex-direction: column;
     gap: 20px;
     text-align: center;
+	transition: all 10s;
     align-items: center;
     backdrop-filter: blur(10px);
     justify-content: center;
