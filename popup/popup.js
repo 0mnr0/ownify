@@ -72,7 +72,7 @@ function AnimateVPNButton(state, animate){
 
 
 toggleButton.addEventListener('click', async () => {
-	const { enabled } = await chrome.storage.local.get('enabled');
+	const enabled = await GetBool('enabled');
 	const newState = !enabled;
 	  
 	await chrome.storage.local.set({ enabled: newState });
@@ -85,12 +85,7 @@ toggleButton.addEventListener('click', async () => {
 });
 
 
-chrome.storage.local.get('enabled', (data) => {
-	lastVpnState = data.enabled
-	toggleButton.textContent =  data.enabled ? 'Отключить VPN' : 'Запустить VPN';
-	AnimateBlock(data.enabled);
-	AnimateVPNButton(data.enabled, false);
-});
+
 
 
 let proxyfied = new Image(); proxyfied.src = 'vpn.svg';
@@ -174,8 +169,10 @@ ConnectionTypes.forEach(connection => {
 
 function UpdateWhiteList(animate){
 	DisplayList.innerHTML = ``;
+	console.log(WhiteListSites);
 	for (let i = 0; i<WhiteListSites.length; i++) {
 		let OriginalSiteName = WhiteListSites[i];
+		console.log('OriginalSiteName:', OriginalSiteName[i]);
 		let WhiteSite = document.createElement('div');
 		WhiteSite.className = 'Rule';
 		WhiteSite.innerHTML = `
@@ -345,7 +342,7 @@ async function GetActualSetting() {
 		<div class="setting">
 			<div class="main flex">
 				<label class="switch">
-					<input type="checkbox" class="settingAction" id="SETTING:anonimize" ${await GetBool('anonimize') ? 'checked' : ''}>
+					<input type="checkbox" class="settingAction" id="SETTING:anonimize" ${await GetSettingBool('anonimize') ? 'checked' : ''}>
 					<span class="slider round"></span>
 				</label>
 				<span onclick="document.getElementById('SETTING:anonimize').click()"> Anonimize+ </span>
@@ -356,7 +353,7 @@ async function GetActualSetting() {
 		<div class="setting">
 			<div class="main flex">
 				<label class="switch">
-					<input type="checkbox" class="settingAction" id="SETTING:FixWEBRTC" ${await GetBool('FixWEBRTC') ? 'checked' : ''}>
+					<input type="checkbox" class="settingAction" id="SETTING:FixWEBRTC" ${await GetSettingBool('FixWEBRTC') ? 'checked' : ''}>
 					<span class="slider round"></span>
 				</label>
 				<span onclick="document.getElementById('SETTING:FixWEBRTC').click()"> Скрыть IP WebRTC </span>
@@ -392,8 +389,13 @@ SettingsTopBar.onclick= async () => {
 
 /////////////////////////////////////////////////////
 
-async function GetBool(name) {
+async function GetSettingBool(name) {
 	name = "SETTING:"+name;
+	let ret = (await chrome.storage.local.get(name))[name]
+	return ret === true;
+}
+
+async function GetBool(name) {
 	let ret = (await chrome.storage.local.get(name))[name]
 	return ret === true;
 }
@@ -480,7 +482,8 @@ chrome.runtime.onMessage.addListener((message, sender) => {
   }
   if (message.url) {
 	  CurrentTabUrl = getCleanDomain(message.url);
-	  if (CurrentTabUrl === null || CurrentTabUrl === "newtab" || CurrentTabUrl === "extensions" || message.url.indexOf('chrome://') >= 0) {
+	  console.log(CurrentTabUrl. CurrentTabUrl==="chrome");
+	  if (CurrentTabUrl === null || CurrentTabUrl === "newtab" || CurrentTabUrl === "extensions" || CurrentTabUrl === "chrome" || message.url.indexOf('chrome://') >= 0) {
 		  CurrentTabUrl === '';
 	  }
   }
@@ -496,6 +499,7 @@ function GetSiteIcon(domain) {
 
 
 function setActiveConnectionType(conType) {
+	console.log('setActiveConnectionType: ',conType);
 	proxyMode.textContent = `Режим "${capitalizeFirstLetter(conType)}"`
 	ConnectionTypes.forEach(connection => {
 		(connection.getAttribute('value').toLowerCase() === conType) ? connection.classList.add('active') : connection.classList.remove('active');
@@ -553,7 +557,14 @@ function StartAuth(cancelable) {
 }
 
 (async ()=>{	
-	await chrome.runtime.sendMessage({ action: "getUrl" });
+	let isNowEnabled = await GetBool('enabled');
+	lastVpnState = isNowEnabled;
+	toggleButton.textContent =  isNowEnabled ? 'Отключить VPN' : 'Запустить VPN';
+	AnimateBlock(isNowEnabled);
+	AnimateVPNButton(isNowEnabled, false);
+
+
+	chrome.runtime.sendMessage({ action: "getUrl" });
 	WhiteListSites = (await chrome.storage.local.get('WhiteListed')).WhiteListed;
 	if (typeof WhiteListSites !== 'undefined') {startLength = WhiteListSites.length; }
 	let ServerData = (await chrome.storage.local.get('ServerData')).ServerData;
