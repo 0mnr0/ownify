@@ -84,8 +84,22 @@
 		<span class="split"></span>
 		
 		<div class="SettingsList"></div>
-		
 	</div>
-		
+
+
+	<div class="GitHubHosts">
+		<img src="https://avatars.githubusercontent.com/u/99125366" loading="lazy">
+		<div class="setting">
+			<div class="main flex">
+				<label class="switch">
+					<input type="checkbox" id="FirstOpenedSetting" checked>
+					<span class="slider round"></span>
+				</label>
+				<span onclick="document.getElementById('FirstOpenedSetting').click()"> Обновляемый WhiteList </span>
+			</div>
+			<span class="desc"> Постоянно дополнять список WhiteList на основе <a href="https://github.com/0mnr0/ownify" target="_blank"> репозитория</a>. Не заменяет вручную добавленные сайты </a> </span>
+		</div>
+		<button class="AppendAndGo"> Продолжить </button>
+	</div>
 	
 </body>

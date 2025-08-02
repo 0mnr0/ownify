@@ -26,6 +26,7 @@ const SettingsIcon = find('img.openSettings');
 const SettingsScreen = find('div.settingsSection');
 const SettingsTopBar = find('div.settingsSection .topPane');
 const SettingsList = find('div.settingsSection .SettingsList');
+const GitHubHosts = find('div.GitHubHosts');
 subtitle.textContent = SUBTITLE_TEXT;
 
 
@@ -171,10 +172,8 @@ ConnectionTypes.forEach(connection => {
 
 function UpdateWhiteList(animate){
 	DisplayList.innerHTML = ``;
-	console.log(WhiteListSites);
 	for (let i = 0; i<WhiteListSites.length; i++) {
 		let OriginalSiteName = WhiteListSites[i];
-		console.log('OriginalSiteName:', OriginalSiteName[i]);
 		let WhiteSite = document.createElement('div');
 		WhiteSite.className = 'Rule';
 		WhiteSite.innerHTML = `
@@ -242,7 +241,6 @@ WhiteListEditor.addEventListener('click', async () => {
 	if (!isEditorOpened && typeof WhiteListSites !== 'undefined') {
 		UpdateWhiteList(true);
 		if (WhiteListSites !== undefined && WhiteListSites.indexOf(CurrentTabUrl) < 0) {
-			console.log(CurrentTabUrl);
 			EditorTextField.value = CurrentTabUrl;
 		}
 	}
@@ -270,13 +268,13 @@ EditorButton.onclick = async ()=>{
 		FoundedElement.boxShadow = ''; 
 
 		return;
-	} 
-	
-	WhiteListSites.push(getCleanDomain(EditorTextField.value));
-	await chrome.storage.local.set({ WhiteListed: WhiteListSites });
-	await chrome.runtime.sendMessage({ action: "reloadSettings:withVpnReload" }); 
-	UpdateWhiteList(false);
-	EditorTextField.value = '';
+	} else {
+		WhiteListSites.push(getCleanDomain(EditorTextField.value));
+		await chrome.storage.local.set({ WhiteListed: WhiteListSites });
+		chrome.runtime.sendMessage({ action: "reloadSettings:withVpnReload" }); 
+		UpdateWhiteList(false);
+		EditorTextField.value = '';
+	}
 }
 
 find('div.ListEditorScreen div.topbar').onclick = () => {
@@ -331,7 +329,7 @@ SettingsIcon.onclick = async () => {
 			}
 			runLater(() => {
 				setting.right = '0px';
-				setting.opacity = 1;
+				runLater(() => { setting.opacity = 1; }, 20);
 			}, 50*i)
 			
 		}
@@ -360,6 +358,17 @@ async function GetActualSetting() {
 				<span onclick="document.getElementById('SETTING:FixWEBRTC').click()"> Отключить WebRTC </span>
 			</div>
 			<span class="desc"> Исправляет "Утечку" реального IP адреса, но соединение становится медленее </span>
+		</div>
+		
+		<div class="setting">
+			<div class="main flex">
+				<label class="switch">
+					<input type="checkbox" class="settingAction" id="WhiteList:FromGitHub" ${await GetBool('WhiteList:FromGitHub') ? 'checked' : ''}>
+					<span class="slider round"></span>
+				</label>
+				<span onclick="document.getElementById('WhiteList:FromGitHub').click()"> Обновляемый WhiteList </span>
+			</div>
+			<span class="desc"> Постоянно дополнять список WhiteList на основе <a href="https://github.com/0mnr0/ownify" target="_blank"> репозитория</a>. Не заменяет вручную добавленные сайты </span>
 		</div>
 		
 		
@@ -403,7 +412,7 @@ async function GetBool(name) {
 
 async function GetString(name) {
 	let ret = (await chrome.storage.local.get(name))[name]
-	return ret === true;
+	return ret;
 }
 
 
@@ -477,7 +486,7 @@ if (isOct24 && document.getElementById('brth')) {
 
 chrome.runtime.onMessage.addListener((message, sender) => {
   if (message.type === "network-request") {
-	  if (isEditorOpened || !userAuthed || typeof message.details === "undefined" || typeof message.details.initiator === "undefined") {return;}
+	  if (isSettingsOpened || isEditorOpened || !userAuthed || typeof message.details === "undefined" || typeof message.details.initiator === "undefined") {return;}
 	  if (message.details.initiator.indexOf("chrome-extension://") >= 0) {return;};
 	  CreateAnimation(message.details.vpnfied);
   }
@@ -515,6 +524,34 @@ async function loadLastType() {
 	setActiveConnectionType(connectionType);
 }
 
+async function ShowGitHubHosts(){
+	let checkValue = GitHubHosts.querySelector('input#FirstOpenedSetting');
+	GitHubHosts.zIndex = 5;
+	GitHubHosts.display = 'flex';
+	GitHubHosts.opacity = 1;
+	GitHubHosts.querySelector('button').addEventListener('click', () => {
+		let NeedAutoSync = checkValue.checked;
+		
+		async function ClosePopup() {
+			await chrome.storage.local.set({ 'WhiteList:FromGitHub': NeedAutoSync }); 
+			GitHubHosts.zIndex = -5;
+			GitHubHosts.display = 'none';
+		}
+		
+		runLater(() => {
+			if (!NeedAutoSync) {return}
+			fetcher('https://raw.githubusercontent.com/0mnr0/ownify/refs/heads/main/whitelist.json', 'GET', null).then(async (res) => {
+				await chrome.storage.local.set({ WhiteListed: res.values });
+				WhiteListSites = res.values;
+				if (isEditorOpened) {
+					UpdateWhiteList();
+				}
+			})
+		}, 200);
+		ClosePopup();
+	})
+}
+
 
 function StartAuth(cancelable) {
 		if (isSettingsOpened) {SwitchSettings();}
@@ -526,17 +563,20 @@ function StartAuth(cancelable) {
 		let TextField = find('div.AuthWindow input');
 		ContinueButton.addEventListener('click', async () => {
 			ContinueButton.disabled = true;
+			let notFoundInfo = '';
 			try { 
+				notFoundInfo = '';
 				const parsedJson = JSON.parse(TextField.value);
+				if (parsedJson.scheme===undefined || parsedJson.host === undefined || parsedJson.PCP === undefined) {
+					notFoundInfo = '(Field "'+ ((parsedJson.scheme === undefined) ? 'scheme' : (parsedJson.host === undefined ? 'host' : 'PCP')) + '" not found)'
+					throw notFoundInfo;
+				}
 				const FilteredJSON = {};
 				FilteredJSON.host = parsedJson.host;
 				FilteredJSON.scheme = parsedJson.scheme;
 				FilteredJSON.port = parsedJson.PCP;
 				if (parsedJson.PCN !== undefined) {
 					FilteredJSON.username = AITG(parsedJson.PCN);
-				}
-				if (parsedJson.timeOffset !== undefined) {
-					FilteredJSON.timeOffset = parsedJson.timeOffset;
 				}
 				if (parsedJson.PCA !== undefined) {  
 					FilteredJSON.password = AITG(parsedJson.PCA);
@@ -545,7 +585,7 @@ function StartAuth(cancelable) {
 				chrome.runtime.sendMessage({ action: "reloadSettings" });
 				window.location.reload();
 			} catch(e) {
-				alert("Неверный синтаксис");
+				alert("Неверный синтаксис "+(notFoundInfo));
 			}
 			ContinueButton.disabled = false;
 		});
@@ -560,6 +600,11 @@ function StartAuth(cancelable) {
 (async ()=>{	
 	let isNowEnabled = await GetBool('enabled');
 	lastVpnState = isNowEnabled;
+	if (typeof await GetString('ServerData') === 'undefined') {
+		lastVpnState = false;
+		toggleButton.disabled = true;
+	}
+	
 	toggleButton.textContent =  isNowEnabled ? 'Отключить VPN' : 'Запустить VPN';
 	AnimateBlock(isNowEnabled);
 	AnimateVPNButton(isNowEnabled, false);
@@ -572,13 +617,40 @@ function StartAuth(cancelable) {
 	loadLastType();
 	if (typeof ServerData === "undefined") {
 		StartAuth();
+	} else if (!await IsKeyExists('WhiteList:FromGitHub')) {
+		ShowGitHubHosts();
 	}
+
 })();
 
+async function IsKeyExists(keyName){
+	return Object.keys(await chrome.storage.local.get(keyName)).indexOf(keyName) >= 0
+}
 
 function AITG(str) {
   return [...str].map(c =>
     c >= 'B' && c <= 'Z' || c >= 'b' && c <= 'z' ? String.fromCharCode(c.charCodeAt(0) - 1) :
     c === 'A' ? 'Z' : c === 'a' ? 'z' : c
   ).join('');
+}
+
+
+function fetcher(url, method = 'GET', data = null) {
+    const options = {
+        method,
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    };
+    if (data && method.toUpperCase() !== 'GET') {
+        options.body = JSON.stringify(data);
+    }
+
+    return fetch(url, options)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        });
 }

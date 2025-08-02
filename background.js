@@ -16,7 +16,7 @@ async function SettingsLoader(){
 	isProxyActive = await chrome.storage.local.get('enabled').enabled;
 	PROXY_CONFIG = (await chrome.storage.local.get('ServerData')).ServerData;
 	WhiteList = (await chrome.storage.local.get('WhiteListed')).WhiteListed; if (WhiteList === undefined) {WhiteList = [];}
-	HideUserAgent = await GetBool('CHROMOMIZE');
+	HideUserAgent = await GetSettingBool('CHROMOMIZE');
 }
 await SettingsLoader();
 
@@ -92,8 +92,14 @@ async function disableProxy() {
     isProxyActive = false;
 }
 
-async function GetBool(name) {
+async function GetSettingBool(name) {
 	name = "SETTING:"+name;
+	let ret = (await chrome.storage.local.get(name))[name]
+	return ret === true;
+}
+
+async function GetBool(name) {
+	name = name;
 	let ret = (await chrome.storage.local.get(name))[name]
 	return ret === true;
 }
@@ -124,6 +130,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 			await SettingsLoader();
 			disableProxy();
 			await LaunchNeededProxy();
+			sendResponse({'status': 'ok'})
 		})()
 	}
 	if (msg.action === "switchConnections") {
@@ -154,31 +161,37 @@ async function LaunchNeededProxy(){
 	}
 }
 
+console.LaunchNeededProxy = LaunchNeededProxy;
+console.disableProxy = disableProxy;
+
 async function RethinkInAppRules(){
 	chrome.privacy.network.webRTCIPHandlingPolicy.set({
 		 value: await GetBool('FixWEBRTC') ? "disable_non_proxied_udp" : "default"
 	});
-	HideUserAgent = await GetBool('CHROMOMIZE');
-	console.log('new value for HideUserAgent:', HideUserAgent);
+	HideUserAgent = await GetSettingBool('CHROMOMIZE');
 	applyRules(HideUserAgent);
-	
 }
 
-chrome.runtime.onInstalled.addListener(() => {
-	(async () => {
-		await disableProxy();
-		await chrome.storage.local.set({ enabled: false });
-	})();
-});
+async function RefreshInAppWhiteList(){
+	if (await GetBool('WhiteList:FromGitHub')) {
+		fetcher("https://raw.githubusercontent.com/0mnr0/ownify/refs/heads/main/whitelist.json", 'GET', null).then(async (res) => {
+			let NewList = (await chrome.storage.local.get('WhiteListed')).WhiteListed;
+			if (typeof NewList !== 'object') {NewList = []}
+			NewList = [...new Set([...NewList, ...res.values])]
+			WhiteList = NewList;
+			await chrome.storage.local.set({ WhiteListed: NewList });
+			await SettingsLoader();
+			if (await GetBool('enabled')) {
+				await disableProxy();
+				await LaunchNeededProxy();
+			}
+			
+		});
+	}
+}
 
-chrome.runtime.onStartup.addListener(() => {
-	(async () => {
-		await disableProxy();
-		await chrome.storage.local.set({ enabled: false });
-		let { loadedFilteredProxy } = await chrome.storage.local.get('type');
-		isFilteredProxy = loadedFilteredProxy;
-	})();
-});
+setInterval(RefreshInAppWhiteList, 1000 * 60);
+RefreshInAppWhiteList();
 
 chrome.windows.onRemoved.addListener(function(windowId){
   console.log("!! Exiting the Browser !!");
@@ -223,7 +236,7 @@ const HEADERS_RULE = {
     "type": "modifyHeaders",
     "requestHeaders": [
       { "header": "User-Agent", "operation": "set", "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36" },
-	  { "header": "Accept-Language", "operation": "set", "value": "en-US,en;q=0.9" }
+	  { "header": "Accept-Language", "operation": "set", "value": "ru,en-US,en;q=0.9" }
     ]
   },
   "condition": {
@@ -235,7 +248,6 @@ const HEADERS_RULE = {
 
 
 function applyRules(enabled) {
-	console.log('enabled? :', enabled);
   if (enabled) {
     chrome.declarativeNetRequest.updateDynamicRules({
       removeRuleIds: [100],
@@ -266,3 +278,24 @@ chrome.webRequest.onBeforeRequest.addListener(
 
 })();
 
+
+
+function fetcher(url, method = 'GET', data = null) {
+    const options = {
+        method,
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    };
+    if (data && method.toUpperCase() !== 'GET') {
+        options.body = JSON.stringify(data);
+    }
+
+    return fetch(url, options)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            return response.json();
+        });
+}
