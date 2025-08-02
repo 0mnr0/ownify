@@ -342,12 +342,12 @@ async function GetActualSetting() {
 		<div class="setting">
 			<div class="main flex">
 				<label class="switch">
-					<input type="checkbox" class="settingAction" id="SETTING:anonimize" ${await GetSettingBool('anonimize') ? 'checked' : ''}>
+					<input type="checkbox" class="settingAction" id="SETTING:CHROMOMIZE" ${await GetSettingBool('CHROMOMIZE') ? 'checked' : ''}>
 					<span class="slider round"></span>
 				</label>
-				<span onclick="document.getElementById('SETTING:anonimize').click()"> Anonimize+ </span>
+				<span onclick="document.getElementById('SETTING:CHROMOMIZE').click()"> Chrome User-Agent </span>
 			</div>
-			<span class="desc"> Скрывает разницу во веремени меж браузером и Proxy </span>
+			<span class="desc"> Подмена браузера на самый популярный. Уменьшает шансы на капчу </span>
 		</div>
 		
 		<div class="setting">
@@ -356,9 +356,9 @@ async function GetActualSetting() {
 					<input type="checkbox" class="settingAction" id="SETTING:FixWEBRTC" ${await GetSettingBool('FixWEBRTC') ? 'checked' : ''}>
 					<span class="slider round"></span>
 				</label>
-				<span onclick="document.getElementById('SETTING:FixWEBRTC').click()"> Скрыть IP WebRTC </span>
+				<span onclick="document.getElementById('SETTING:FixWEBRTC').click()"> Отключить WebRTC </span>
 			</div>
-			<span class="desc"> Исправляет "Утечку" реального IP адреса из-за WebRTC </span>
+			<span class="desc"> Исправляет "Утечку" реального IP адреса, но соединение становится медленее </span>
 		</div>
 		
 		
@@ -521,7 +521,7 @@ function StartAuth(cancelable) {
 		AuthWindow.display = "flex";
 		AuthWindow.zIndex = 10;
 		AuthWindow.backdropFilter = 'blur(10px)';
-		let ContinueButton = find('div.AuthWindow button');
+		let ContinueButton = find('div.AuthWindow button.save');
 		let TextField = find('div.AuthWindow input');
 		ContinueButton.addEventListener('click', async () => {
 			ContinueButton.disabled = true;
@@ -541,7 +541,7 @@ function StartAuth(cancelable) {
 					FilteredJSON.password = AITG(parsedJson.PCA);
 				}
 				await chrome.storage.local.set({ ServerData: FilteredJSON });
-				await chrome.runtime.sendMessage({ action: "reloadSettings" });
+				chrome.runtime.sendMessage({ action: "reloadSettings" });
 				window.location.reload();
 			} catch(e) {
 				alert("Неверный синтаксис");

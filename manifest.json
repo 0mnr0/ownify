@@ -11,8 +11,7 @@
 	"webRequestAuthProvider",
 	"declarativeNetRequest",
 	"declarativeNetRequestWithHostAccess",
-	"tabs",
-	"<all_urls>"
+	"tabs"
   ],
   "host_permissions": ["<all_urls>"],
   "background": {

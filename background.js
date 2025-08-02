@@ -16,7 +16,7 @@ async function SettingsLoader(){
 	isProxyActive = await chrome.storage.local.get('enabled').enabled;
 	PROXY_CONFIG = (await chrome.storage.local.get('ServerData')).ServerData;
 	WhiteList = (await chrome.storage.local.get('WhiteListed')).WhiteListed; if (WhiteList === undefined) {WhiteList = [];}
-	HideUserAgent = await GetBool('anonimize');
+	HideUserAgent = await GetBool('CHROMOMIZE');
 }
 await SettingsLoader();
 
@@ -31,7 +31,6 @@ function Generator() {
 
 chrome.webRequest.onAuthRequired.addListener(
     (details, callbackFn) => {
-        if (!isProxyActive) return;
         return {
             authCredentials: {
                 username: PROXY_CONFIG.username,
@@ -99,23 +98,14 @@ async function GetBool(name) {
 	return ret === true;
 }
 
-async function handleCJDataRequest(){
-	const { timeOffset } = await chrome.storage.local.get("timeOffset");
-	return { 
-		"timeOffset": timeOffset,
-		isEnabled: await GetBool('anonimize')
-    }
-}
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-    if (msg.action === "getCJData") {
-		(async() => { sendResponse(await handleCJDataRequest()) })()
-        return true;
-    }
-
-	
     if (msg.action === "toggleProxy") {
-        return msg.enabled ? LaunchNeededProxy() : disableProxy();
+		(async() => {
+			await msg.enabled ? LaunchNeededProxy() : disableProxy();
+			sendResponse({enabled: msg.enabled});
+		})();
+        return true;
     }
 	
 	if (msg.action === "reloadSettings") {
@@ -145,8 +135,8 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 	}
 	if (msg.action === "getUrl") {
 		(async() => {
-			await chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
-				await chrome.runtime.sendMessage({ url: tabs[0]?.url });
+			await chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+				sendResponse({ url: tabs[0]?.url });
 			});
 		})()
 	}
@@ -168,19 +158,32 @@ async function RethinkInAppRules(){
 	chrome.privacy.network.webRTCIPHandlingPolicy.set({
 		 value: await GetBool('FixWEBRTC') ? "disable_non_proxied_udp" : "default"
 	});
-	HideUserAgent = await GetBool('anonimize');
+	HideUserAgent = await GetBool('CHROMOMIZE');
 	console.log('new value for HideUserAgent:', HideUserAgent);
 	applyRules(HideUserAgent);
 	
 }
 
-
-chrome.runtime.onStartup.addListener(async () => {
-    const { enabled } = await chrome.storage.local.get("enabled");
-    let { loadedFilteredProxy } = await chrome.storage.local.get('type');
-	isFilteredProxy = loadedFilteredProxy;
-    if (enabled) await LaunchNeededProxy();
+chrome.runtime.onInstalled.addListener(() => {
+	(async () => {
+		await disableProxy();
+		await chrome.storage.local.set({ enabled: false });
+	})();
 });
+
+chrome.runtime.onStartup.addListener(() => {
+	(async () => {
+		await disableProxy();
+		await chrome.storage.local.set({ enabled: false });
+		let { loadedFilteredProxy } = await chrome.storage.local.get('type');
+		isFilteredProxy = loadedFilteredProxy;
+	})();
+});
+
+chrome.windows.onRemoved.addListener(function(windowId){
+  console.log("!! Exiting the Browser !!");
+});
+
 
 
 chrome.runtime.onSuspend.addListener(() => {
@@ -214,22 +217,25 @@ function isSiteWasOpenedWithProxy(url){
 
 
 const HEADERS_RULE = {
-  id: 100,
-  priority: 1,
-  action: {
-    type: "modifyHeaders",
-    requestHeaders: [
-      { header: "User-Agent", operation: "set", value: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36" }
+  "id": 100,
+  "priority": 3,
+  "action": {
+    "type": "modifyHeaders",
+    "requestHeaders": [
+      { "header": "User-Agent", "operation": "set", "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36" },
+	  { "header": "Accept-Language", "operation": "set", "value": "en-US,en;q=0.9" }
     ]
   },
-  condition: {
-    urlFilter: "<all_urls>",
-    resourceTypes: ["main_frame", "xmlhttprequest"] // или другие, если нужно
+  "condition": {
+    "urlFilter": "*",
+    "resourceTypes": ["main_frame"]
   }
 }
 
 
+
 function applyRules(enabled) {
+	console.log('enabled? :', enabled);
   if (enabled) {
     chrome.declarativeNetRequest.updateDynamicRules({
       removeRuleIds: [100],
@@ -241,6 +247,11 @@ function applyRules(enabled) {
     });
   }
 }
+
+chrome.runtime.onSuspend.addListener(async() => {
+	await chrome.storage.local.set({ enabled: false });
+	disableProxy();
+});
 
 
 
