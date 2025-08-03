@@ -83,6 +83,7 @@ div.proxyConnection button#toggle {
     background: black;
     border: solid 3px red;
     color: white;
+	transition: all .5s, box-shadow .45s ease-in-out;
     box-shadow: 0 0 20px 2px #ff0000cc;
 }
 
@@ -596,7 +597,7 @@ progress {
     --a: calc((var(--p) * 360deg) / 100); /* Переводим в градусы */
     width: var(--s); height: var(--s); /* Размеры */
     border-radius: 50%; /* Превращаем в круг */
-    background: conic-gradient(#3c82f5, #3c82f5 var(--a), #dbeafe var(--a), #dbeafe);
+    background: conic-gradient(#ff238f, #ff238f var(--a), #fedbf8 var(--a), #fedbf8);
    }
    progress::-webkit-progress-bar {
     visibility: hidden; /* Прячем в Chrome */
