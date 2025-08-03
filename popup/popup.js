@@ -363,6 +363,17 @@ async function GetActualSetting() {
 		<div class="setting">
 			<div class="main flex">
 				<label class="switch">
+					<input type="checkbox" class="settingAction" id="StuckDetector" ${await GetBool('StuckDetector') ? 'checked' : ''}>
+					<span class="slider round"></span>
+				</label>
+				<span onclick="document.getElementById('WhiteList:FromGitHub').click()"> Stuck Detector </span>
+			</div>
+			<span class="desc"> Если сайт не загружается - он автоматически добавляется в WhiteList и перезагружает соединение </span>
+		</div>
+		
+		<div class="setting">
+			<div class="main flex">
+				<label class="switch">
 					<input type="checkbox" class="settingAction" id="WhiteList:FromGitHub" ${await GetBool('WhiteList:FromGitHub') ? 'checked' : ''}>
 					<span class="slider round"></span>
 				</label>

@@ -415,6 +415,12 @@ div.settingsSection div.SettingsList {
     display: flex;
     flex-direction: column;
     gap: 10px;
+    max-height: calc(100% - 45px);
+    overflow: auto;
+	scrollbar-width: none;
+}
+div.settingsSection div.SettingsList::-webkit-scrollbar {
+  display: none;
 }
 
 div.settingsSection div.SettingsList div.setting div.main {

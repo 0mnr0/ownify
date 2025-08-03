@@ -1,3 +1,8 @@
+let __SettingsLoader__;
+let __disableProxy__;
+let __LaunchNeededProxy__;
+let WhiteList = [];
+
 (async () => {
 let isFilteredProxy;
 let isProxyActive;
@@ -8,7 +13,6 @@ let PROXY_CONFIG = {
     username: "",
     password: ""
 };
-let WhiteList = [];
 let HideUserAgent = false;
 
 async function SettingsLoader(){
@@ -18,6 +22,7 @@ async function SettingsLoader(){
 	WhiteList = (await chrome.storage.local.get('WhiteListed')).WhiteListed; if (WhiteList === undefined) {WhiteList = [];}
 	HideUserAgent = await GetSettingBool('CHROMOMIZE');
 }
+__SettingsLoader__ = async () => { await SettingsLoader() };
 await SettingsLoader();
 
 
@@ -91,15 +96,10 @@ async function disableProxy() {
     });
     isProxyActive = false;
 }
+__disableProxy__ = async() => { await disableProxy() };
 
 async function GetSettingBool(name) {
 	name = "SETTING:"+name;
-	let ret = (await chrome.storage.local.get(name))[name]
-	return ret === true;
-}
-
-async function GetBool(name) {
-	name = name;
 	let ret = (await chrome.storage.local.get(name))[name]
 	return ret === true;
 }
@@ -160,6 +160,7 @@ async function LaunchNeededProxy(){
 		await enableProxy()
 	}
 }
+__LaunchNeededProxy__ = async() => { await LaunchNeededProxy(); }
 
 console.LaunchNeededProxy = LaunchNeededProxy;
 console.disableProxy = disableProxy;
@@ -177,6 +178,7 @@ async function RefreshInAppWhiteList(){
 		fetcher("https://raw.githubusercontent.com/0mnr0/ownify/refs/heads/main/whitelist.json", 'GET', null).then(async (res) => {
 			let NewList = (await chrome.storage.local.get('WhiteListed')).WhiteListed;
 			if (typeof NewList !== 'object') {NewList = []}
+			console.log(res);
 			NewList = [...new Set([...NewList, ...res.values])]
 			WhiteList = NewList;
 			await chrome.storage.local.set({ WhiteListed: NewList });
@@ -292,10 +294,129 @@ function fetcher(url, method = 'GET', data = null) {
     }
 
     return fetch(url, options)
-        .then(response => {
+        .then(async(response) => {
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
-            return response.json();
+			let text = await response.text();
+			if (!isJson(text)) {
+				return text;
+			} else {
+				console.log(text, JSON.parse(text))
+				return JSON.parse(text);
+			}
         });
+}
+
+
+
+
+
+
+
+
+
+
+const pendingLoads = {}; // { tabId: { timer, startTime } }
+const waitingTime = 3;
+chrome.webNavigation.onBeforeNavigate.addListener((details) => {
+    if (details.frameId !== 0) return;
+
+    const tabId = details.tabId;
+
+    // Сброс предыдущего таймера (на всякий случай)
+    if (pendingLoads[tabId]?.timer) {
+        clearTimeout(pendingLoads[tabId].timer);
+    }
+
+    const startTime = Date.now();
+
+    // Устанавливаем таймер
+    const timer = setTimeout(() => {
+        console.log(`Страница в табе ${tabId} грузится больше ${waitingTime} секунд — возможно, зависла.`);
+        
+		chrome.tabs.get(tabId, (tab) => {
+			if (chrome.runtime.lastError) {
+				console.warn("Не удалось получить таб:", chrome.runtime.lastError.message);
+				return;
+			}
+
+			const url = getCleanDomain(tab.url);
+			console.log(`URL для таба ${tabId}: ${url}`);
+			if (url === null) {return;}
+			
+			fetcher('https://www.google.com/', 'GET', null).then(res => {
+				console.log(`${url} stuck detected! | Ping to google.com success!`);
+				(async() => {
+					if (!await GetBool('StuckDetector')) {
+						return;
+					}
+					
+					let NewList = (await chrome.storage.local.get('WhiteListed')).WhiteListed;
+					if (typeof NewList !== 'object') {NewList = []}
+					if (NewList.indexOf(url) >= 0) {
+						console.log(`${url} is already in white list. Returning...`);
+						return;					
+					}
+					NewList = [...new Set([...NewList, ...[url]])]
+					WhiteList = NewList;
+					await chrome.storage.local.set({ WhiteListed: NewList });
+					await __SettingsLoader__();
+					if (await GetBool('enabled')) {
+						await __disableProxy__();
+						await __LaunchNeededProxy__();
+						chrome.tabs.reload(tabId, { bypassCache: true }, () => {
+							if (chrome.runtime.lastError) {
+								console.error("Не удалось перезагрузить вкладку:", chrome.runtime.lastError.message);
+							} else {
+								console.log(`Вкладка ${tabId} (${url}) была перезагружена.`);
+							}
+						});
+
+					}
+				})();
+			}).catch(err => {
+				console.warn(err);
+				console.warn('failed to ping google.com');
+			})
+		});
+
+		
+		
+    }, waitingTime*1000);
+
+    pendingLoads[tabId] = { timer, startTime };
+});
+
+chrome.webNavigation.onCommitted.addListener((details) => {
+    if (details.frameId !== 0) return;
+
+    const tabId = details.tabId;
+    if (pendingLoads[tabId]) {
+        clearTimeout(pendingLoads[tabId].timer);
+        delete pendingLoads[tabId];
+        console.log(`Страница в табе ${tabId} начала загружаться успешно (committed).`);
+    }
+});
+
+function getCleanDomain(url) {
+  try {
+	  let checkUrl = url.startsWith('http://') || url.startsWith('https://') ? url : 'https://' + url;
+	  
+      let parsed = new URL(checkUrl);
+      return parsed.hostname.replace(/^www\./, '').replaceAll("/","");
+  } catch (e) {
+      return null;
+  }
+}
+
+
+async function GetBool(name) {
+	name = name;
+	let ret = (await chrome.storage.local.get(name))[name]
+	return ret === true;
+}
+
+function isJson(obj) {
+    try { JSON.parse(obj); return true; } catch(e) {return false}
 }
