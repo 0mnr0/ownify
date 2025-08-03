@@ -10,7 +10,7 @@ const SUBTITLE_TEXT = 'PROXIFY URSELF! - by ';
 let isProgressBarWorking = false;
 
 const MainWindow = find('div.flex.vertical.centered');
-let animationBlock = document.querySelector('span.animationBlock');
+let proxyConnection = find('div.proxyConnection');
 let toggleButton = document.getElementById('toggle');
 let spanBackground = find('span.background');
 let proxySelector = find('div.proxySelector');
@@ -43,6 +43,10 @@ const random = function(min, max) { // min and max included
 }
 
 async function AnimateBlock(state) {
+	let animationBlock = document.createElement('span');
+	animationBlock.classList = 'animationBlock';
+	proxyConnection.prepend(animationBlock);
+	
 	await animationBlock.makeZeroAnimation(() => {
 		animationBlock.scale = 1;
 		animationBlock.opacity = 1;
@@ -50,12 +54,13 @@ async function AnimateBlock(state) {
 	}, ['scale', 'background', 'filter'], 0)
 	animationBlock.scale = 10;
 	animationBlock.opacity = 0;	
+	runLater(() => {animationBlock.remove()}, 1000);
 }
 
 
 function AnimateVPNButton(state, animate){
 	const borderColor = (state ? '#00a800' : '#cd0000');
-	const BigBoxShadow = (state ? '0 0 20px 14px #27ff00cc' : '0 0 20px 14px #ff0000cc');
+	const BigBoxShadow = (state ? '0 0 16px 10px #27ff00cc' : '0 0 20px 14px #ff0000cc');
 	const boxShadow = (state ? '0 0 20px 2px #27ff00cc' : '0 0 20px 2px #ff0000cc');
 	if (animate) {
 		toggleButton.borderColor = borderColor;
@@ -63,7 +68,7 @@ function AnimateVPNButton(state, animate){
 		spanBackground.filter=(state ? 'hue-rotate(80deg) brightness(1.2)' : '');
 		runLater(() => {
 			toggleButton.boxShadow = boxShadow;
-		}, 150);
+		}, 200);
 	} else {
 		toggleButton.makeZeroAnimation(() => {
 			toggleButton.borderColor = borderColor;
