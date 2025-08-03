@@ -344,7 +344,8 @@ chrome.webNavigation.onBeforeNavigate.addListener((details) => {
 			}
 
 			const url = getCleanDomain(tab.url);
-			console.log(`URL для таба ${tabId}: ${url}`);
+			if (tab.url.indexOf('t.me/') >= 0) {url="t.me";}
+			console.log(`URL для таба ${tabId}: ${url} | ${tab.url}`);
 			if (url === null) {return;}
 			
 			fetcher('https://www.google.com/', 'GET', null).then(res => {
