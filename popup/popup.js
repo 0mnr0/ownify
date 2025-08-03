@@ -305,7 +305,9 @@ SettingsIcon.onclick = async () => {
 	SwitchSettings();
 	
 	if (isSettingsOpened) {
+		SettingsList.scrollTo(0,0);
 		SettingsList.innerHTML = await GetActualSetting();
+		SettingsList.querySelector('span.Ownify.version').textContent = "Ownify " + chrome.runtime.getManifest().version;
 		const settingsList = SettingsList.querySelectorAll('div.setting');
 		
 		
@@ -423,6 +425,8 @@ async function GetActualSetting() {
 			<img src="tg.png" alt="telegram">
 			<a href="https://t.me/dsvl0" target="_blank"> Contact Me </a>
 		</div>
+		
+		<span class="Ownify version"></span>
 	`
 	
 	return txt;

@@ -615,3 +615,12 @@ div.settingsSection div.SettingsList div.setting.fact > div > span {
 	font-size: small;
 	color: #919191;
 }
+
+span.Ownify.version {
+    position: relative;
+    margin-top: -30px;
+    width: 100%;
+    text-align: end;
+    opacity: 0.35;
+    font-size: small;
+}
