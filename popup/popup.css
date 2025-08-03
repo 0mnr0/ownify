@@ -199,9 +199,9 @@ div.TypeSelector span.Title .description {
 
 img.openSettings:hover {
 	border: solid 1px #ff1588;
-	rotate: 45deg;
-	border-radius: 20px;
+	width: 60px;
 }
+
 img.openSettings {
 	height: 40px;
 	width: 40px;
@@ -475,7 +475,7 @@ div.settingsSection div.SettingsList div.setting > button {
     width: 100%;
     padding: 6px; 
 	color: white;
-	background: transparent;
+	background: #27272790;
 	transition: all .3s;
 	border: none;
 	border-radius: 12px

@@ -578,6 +578,7 @@ async function loadLastType() {
 
 
 async function LaunchHostsUpdate() {
+	UpdateWhiteListButton.disabled = true;
 	ProgressBarVisibility(true);
 	SetProgress(0, 0);
 	runLater(async() => {
@@ -597,6 +598,7 @@ async function LaunchHostsUpdate() {
 			await SetProgress(100, 100);
 			runLater(()=>{
 				ProgressBarVisibility(false);
+				endProgressAnimation();
 			}, 200)
 		})
 	}, 150);
@@ -742,7 +744,6 @@ async function SetProgress(toValue, duration = 1000) {
         requestAnimationFrame(step);
       } else {
 		isProgressBarWorking = false;
-		endProgressAnimation();
         resolve(); // Анимация завершена
       }
     }
