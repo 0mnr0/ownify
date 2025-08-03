@@ -403,7 +403,9 @@ async function GetActualSetting() {
 			<button id="authByte"> Изменить конфигурацию </button>
 		</div>
 		
-		<div class="setting">
+		<span class="split2"></span>
+		
+		<div class="setting fact">
 			<h1> Интересный факт: </h1>
 			<span class="desc fact"> Каждый значок появляюшийся на экране, означает что какой-то сайт выполнил запрос: </span>
 			<div class="flex" style="align-items: center">
@@ -415,6 +417,8 @@ async function GetActualSetting() {
 				<span> - Без VPN </span>
 			</div>
 		</div>
+		
+		<span class="split2"></span>
 		
 		<div class="ContactDev flex">
 			<img src="tg.png" alt="telegram">
