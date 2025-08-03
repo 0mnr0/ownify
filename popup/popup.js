@@ -30,7 +30,6 @@ const SettingsList = find('div.settingsSection .SettingsList');
 const GitHubHosts = find('div.GitHubHosts');
 const ProgressDiv = find('div.ProgressBar');
 const ProgressBar = find('div.ProgressBar progress');
-const ContactDev = find('div.ContactDev');
 
 let UpdateWhiteListButton = null;
 subtitle.textContent = SUBTITLE_TEXT;
@@ -577,7 +576,6 @@ async function loadLastType() {
 
 async function LaunchHostsUpdate() {
 	ProgressBarVisibility(true);
-	ContactDevSetVisibility(false);
 	SetProgress(0, 0);
 	runLater(async() => {
 		await SetProgress(10, 200);
@@ -596,7 +594,6 @@ async function LaunchHostsUpdate() {
 			await SetProgress(100, 100);
 			runLater(()=>{
 				ProgressBarVisibility(false);
-				ContactDevSetVisibility(true);
 			}, 200)
 		})
 	}, 150);
@@ -708,10 +705,6 @@ function AITG(str) {
 
 function ProgressBarVisibility(state) {
 	ProgressDiv.bottom = (state ? 10 : -50) + 'px';
-}
-
-function ContactDevSetVisibility(state) {
-	ContactDev.opacity = state ? 1 : 0; 
 }
 
 async function SetProgress(toValue, duration = 1000) {
