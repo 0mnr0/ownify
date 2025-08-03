@@ -91,6 +91,8 @@ async function enableFilteredProxy() {
 
 // Выключение
 async function disableProxy() {
+	chrome.action.setBadgeText({ text: 'OFF' });
+	chrome.action.setTitle({ title: '' });
     await chrome.proxy.settings.set({
         value: { mode: "system" },
         scope: "regular"
@@ -151,6 +153,9 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
 
 async function LaunchNeededProxy(){
+	chrome.action.setBadgeText({ text: isFilteredProxy ? 'WH' : 'ON' });
+	chrome.action.setTitle({ title: isFilteredProxy ? 'Режим "WhiteList"' : 'Режим "ON"' });
+	chrome.action.setBadgeBackgroundColor({ color: '#00000000' });
 	if (isFilteredProxy) {
 		await enableFilteredProxy()
 	} else { 
@@ -158,9 +163,6 @@ async function LaunchNeededProxy(){
 	}
 }
 __LaunchNeededProxy__ = async() => { await LaunchNeededProxy(); }
-
-console.LaunchNeededProxy = LaunchNeededProxy;
-console.disableProxy = disableProxy;
 
 async function RethinkInAppRules(){
 	chrome.privacy.network.webRTCIPHandlingPolicy.set({
@@ -312,12 +314,6 @@ function fetcher(url, method = 'GET', data = null) {
 
 
 
-
-
-
-
-
-
 const pendingLoads = {}; // { tabId: { timer, startTime } }
 const waitingTime = 3;
 chrome.webNavigation.onBeforeNavigate.addListener((details) => {
@@ -422,3 +418,5 @@ async function GetBool(name) {
 function isJson(obj) {
     try { JSON.parse(obj); return true; } catch(e) {return false}
 }
+
+
