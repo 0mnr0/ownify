@@ -246,6 +246,7 @@ WhiteListEditor.addEventListener('click', async () => {
 	
 	if (!isEditorOpened && typeof WhiteListSites !== 'undefined') {
 		UpdateWhiteList(true);
+		console.log('CurrentTabUrl:'+CurrentTabUrl, WhiteListSites !== undefined && WhiteListSites.indexOf(CurrentTabUrl) < 0);
 		if (WhiteListSites !== undefined && WhiteListSites.indexOf(CurrentTabUrl) < 0) {
 			EditorTextField.value = CurrentTabUrl;
 		}
@@ -538,10 +539,9 @@ chrome.runtime.onMessage.addListener((message, sender) => {
 	  if (message.details.initiator.indexOf("chrome-extension://") >= 0) {return;};
 	  CreateAnimation(message.details.vpnfied);
   }
-  if (message.url) {
-	  CurrentTabUrl = getCleanDomain(message.url);
-	  console.log(CurrentTabUrl. CurrentTabUrl==="chrome");
-	  if (CurrentTabUrl === null || CurrentTabUrl === "newtab" || CurrentTabUrl === "extensions" || CurrentTabUrl === "chrome" || message.url.indexOf('chrome://') >= 0) {
+  if (message.getUrl) {
+	  CurrentTabUrl = getCleanDomain(message.getUrl);
+	  if (CurrentTabUrl === null || CurrentTabUrl === undefined || CurrentTabUrl === "newtab" || CurrentTabUrl === "extensions" || CurrentTabUrl === "chrome" || message.getUrl.indexOf('chrome://') >= 0) {
 		  CurrentTabUrl === '';
 	  }
   }

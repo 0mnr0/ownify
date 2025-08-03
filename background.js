@@ -4,6 +4,7 @@ let __LaunchNeededProxy__;
 let WhiteList = [];
 
 (async () => {
+let lastUrl = '';
 let isFilteredProxy;
 let isProxyActive;
 let PROXY_CONFIG = {
@@ -141,11 +142,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 		})()
 	}
 	if (msg.action === "getUrl") {
-		(async() => {
-			await chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-				sendResponse({ url: tabs[0]?.url });
-			});
-		})()
+		chrome.runtime.sendMessage({ 'getUrl': lastUrl });
 	}
 	return true;
 
@@ -264,6 +261,13 @@ function applyRules(enabled) {
 chrome.runtime.onSuspend.addListener(async() => {
 	await chrome.storage.local.set({ enabled: false });
 	disableProxy();
+});
+
+chrome.tabs.onActivated.addListener(async ({ tabId, windowId }) => {
+  chrome.tabs.get(tabId, (tab) => {
+    if (chrome.runtime.lastError || !tab || !tab.url) return;
+		lastUrl = tab.url;
+  });
 });
 
 
