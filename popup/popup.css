@@ -552,6 +552,27 @@ div.ProgressBar {
 div.ProgressBar progress {scale: 0.75}
 
 
+div.ContactDev.flex {
+    height: 40px;
+	margin-top: 40px;
+	justify-content: center;
+	width: 100%;
+    z-index: 1;
+	transition: all .3s;
+    bottom: 5px;
+    padding: 3px;
+    align-items: center;
+}
+
+div.ContactDev img {
+    height: 40px;
+	filter: invert(1);
+}
+
+div.ContactDev a {
+	padding: 5px;
+}
+
 
 progress {
 	--s: 30px;
@@ -566,3 +587,15 @@ progress {
    progress::-moz-progress-bar {
     visibility: hidden; /* Прячем в Firefox */
    }
+   
+
+
+div.settingsSection div.SettingsList div.setting > span.desc.fact {
+    color: #bfbfbf;
+}
+
+div.settingsSection div.SettingsList div.setting > div > span {
+	margin-left: 5px;
+	font-size: small;
+	color: #919191;
+}

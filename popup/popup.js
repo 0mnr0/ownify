@@ -30,6 +30,8 @@ const SettingsList = find('div.settingsSection .SettingsList');
 const GitHubHosts = find('div.GitHubHosts');
 const ProgressDiv = find('div.ProgressBar');
 const ProgressBar = find('div.ProgressBar progress');
+const ContactDev = find('div.ContactDev');
+
 let UpdateWhiteListButton = null;
 subtitle.textContent = SUBTITLE_TEXT;
 let AuthWindow = find('div.AuthWindow');
@@ -400,6 +402,24 @@ async function GetActualSetting() {
 		<div class="setting">
 			<button id="authByte"> Изменить конфигурацию </button>
 		</div>
+		
+		<div class="setting">
+			<h1> Интересный факт: </h1>
+			<span class="desc fact"> Каждый значок появляюшийся на экране, означает что какой-то сайт выполнил запрос: </span>
+			<div class="flex" style="align-items: center">
+				<img src="${proxyfied.src}">
+				<span> - С использованием VPN</span>
+			</div>
+			<div class="flex" style="align-items: center">
+				<img src="${userfied.src}">
+				<span> - Без VPN </span>
+			</div>
+		</div>
+		
+		<div class="ContactDev flex">
+			<img src="tg.png" alt="telegram">
+			<a href="https://t.me/dsvl0" target="_blank"> Contact Me </a>
+		</div>
 	`
 	
 	return txt;
@@ -553,6 +573,7 @@ async function loadLastType() {
 
 async function LaunchHostsUpdate() {
 	ProgressBarVisibility(true);
+	ContactDevSetVisibility(false);
 	SetProgress(0, 0);
 	runLater(async() => {
 		await SetProgress(10, 200);
@@ -571,6 +592,7 @@ async function LaunchHostsUpdate() {
 			await SetProgress(100, 100);
 			runLater(()=>{
 				ProgressBarVisibility(false);
+				ContactDevSetVisibility(true);
 			}, 200)
 		})
 	}, 150);
@@ -684,6 +706,10 @@ function ProgressBarVisibility(state) {
 	ProgressDiv.bottom = (state ? 10 : -50) + 'px';
 }
 
+function ContactDevSetVisibility(state) {
+	ContactDev.opacity = state ? 1 : 0; 
+}
+
 async function SetProgress(toValue, duration = 1000) {
   return new Promise(resolve => {
 	isProgressBarWorking = true;
@@ -693,8 +719,8 @@ async function SetProgress(toValue, duration = 1000) {
     if (duration === 0 || fromValue === toValue) {
       ProgressBar.value = toValue;
       ProgressBar.style.setProperty('--p', toValue);
-	  isProgressBarWorking = false;
 	  endProgressAnimation();
+	  isProgressBarWorking = false;
       resolve();
       return;
     }
