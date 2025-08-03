@@ -437,6 +437,10 @@ div.settingsSection .setting {
 }
 
 
+div.settingsSection div.SettingsList div.setting.DoubleAction.top {border-end-end-radius: 8px; border-end-start-radius: 8px;}
+div.settingsSection div.SettingsList div.setting.DoubleAction.end {border-start-start-radius: 8px; border-start-end-radius: 8px; margin-top: -6px;}
+
+
 div.settingsSection div.SettingsList div.setting span.desc {
 	font-size: small;
 	color: gray;
@@ -449,15 +453,16 @@ div.settingsSection div.SettingsList span.split {
     background: gray;
 }
 
-div.settingsSection div.SettingsList button#authByte {
+div.settingsSection div.SettingsList div.setting > button {
     width: 100%;
     padding: 6px; 
 	color: white;
 	background: transparent;
+	transition: all .3s;
 	border: none;
 	border-radius: 12px
 }
-div.settingsSection div.SettingsList button#authByte:hover { background: #7373735e }
+div.settingsSection div.SettingsList div.setting > button:hover { background: #7373735e }
 
 
 div.GitHubHosts {
@@ -526,3 +531,38 @@ div.GitHubHosts button.AppendAndGo {
 div.GitHubHosts button.AppendAndGo:hover {
 	border: solid 2px lime
 }
+
+button#reloadWhiteList:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+div.ProgressBar {
+    background: #3d3d3dac;
+    gap: 2px;
+    padding: 3px;
+    padding-right: 8px;
+    border-radius: 100px;
+    position: absolute;
+    bottom: -50px;
+    right: 10px;
+    z-index: 12;
+    align-items: center;
+}
+div.ProgressBar progress {scale: 0.75}
+
+
+
+progress {
+	--s: 30px;
+    --a: calc((var(--p) * 360deg) / 100); /* Переводим в градусы */
+    width: var(--s); height: var(--s); /* Размеры */
+    border-radius: 50%; /* Превращаем в круг */
+    background: conic-gradient(#3c82f5, #3c82f5 var(--a), #dbeafe var(--a), #dbeafe);
+   }
+   progress::-webkit-progress-bar {
+    visibility: hidden; /* Прячем в Chrome */
+   }
+   progress::-moz-progress-bar {
+    visibility: hidden; /* Прячем в Firefox */
+   }

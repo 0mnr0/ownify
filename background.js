@@ -178,7 +178,6 @@ async function RefreshInAppWhiteList(){
 		fetcher("https://raw.githubusercontent.com/0mnr0/ownify/refs/heads/main/whitelist.json", 'GET', null).then(async (res) => {
 			let NewList = (await chrome.storage.local.get('WhiteListed')).WhiteListed;
 			if (typeof NewList !== 'object') {NewList = []}
-			console.log(res);
 			NewList = [...new Set([...NewList, ...res.values])]
 			WhiteList = NewList;
 			await chrome.storage.local.set({ WhiteListed: NewList });
@@ -302,7 +301,6 @@ function fetcher(url, method = 'GET', data = null) {
 			if (!isJson(text)) {
 				return text;
 			} else {
-				console.log(text, JSON.parse(text))
 				return JSON.parse(text);
 			}
         });

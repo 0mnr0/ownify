@@ -7,6 +7,7 @@ let WhiteListSites = undefined;
 let isSettingsOpened = false;
 let CurrentTabUrl = '';
 const SUBTITLE_TEXT = 'PROXIFY URSELF! - by ';
+let isProgressBarWorking = false;
 
 const MainWindow = find('div.flex.vertical.centered');
 let animationBlock = document.querySelector('span.animationBlock');
@@ -27,10 +28,14 @@ const SettingsScreen = find('div.settingsSection');
 const SettingsTopBar = find('div.settingsSection .topPane');
 const SettingsList = find('div.settingsSection .SettingsList');
 const GitHubHosts = find('div.GitHubHosts');
+const ProgressDiv = find('div.ProgressBar');
+const ProgressBar = find('div.ProgressBar progress');
+let UpdateWhiteListButton = null;
 subtitle.textContent = SUBTITLE_TEXT;
-
-
 let AuthWindow = find('div.AuthWindow');
+
+
+
 
 const random = function(min, max) { // min and max included
   return Math.floor(Math.random() * (max - min + 1) + min)
@@ -305,7 +310,7 @@ SettingsIcon.onclick = async () => {
 		
 		for (let i = 0; i < settingsList.length; i++) {
 			const setting = settingsList[i];
-			setting.right = '40px';
+			setting.right = (40 + (15 * i))+'px';
 			setting.opacity = 0;
 			
 			let SettingElement;
@@ -325,12 +330,18 @@ SettingsIcon.onclick = async () => {
 					if (SettingElement.id==='authByte') {
 						StartAuth(true);
 					}
-				})
+					
+					if (SettingElement.id==='reloadWhiteList') {
+						LaunchHostsUpdate();
+						SettingsIcon.click();
+					}
+				});
+				if (SettingElement.id==='reloadWhiteList') { UpdateWhiteListButton = SettingElement; }
 			}
 			runLater(() => {
 				setting.right = '0px';
-				runLater(() => { setting.opacity = 1; }, 20);
-			}, 50*i)
+				setting.opacity = 1;
+			}, 25*i)
 			
 		}
 	}
@@ -371,7 +382,7 @@ async function GetActualSetting() {
 			<span class="desc"> Если сайт не загружается - он автоматически добавляется в WhiteList и перезагружает соединение </span>
 		</div>
 		
-		<div class="setting">
+		<div class="setting DoubleAction top" >
 			<div class="main flex">
 				<label class="switch">
 					<input type="checkbox" class="settingAction" id="WhiteList:FromGitHub" ${await GetBool('WhiteList:FromGitHub') ? 'checked' : ''}>
@@ -382,6 +393,9 @@ async function GetActualSetting() {
 			<span class="desc"> Постоянно дополнять список WhiteList на основе <a href="https://github.com/0mnr0/ownify" target="_blank"> репозитория</a>. Не заменяет вручную добавленные сайты </span>
 		</div>
 		
+		<div class="setting DoubleAction end">
+			<button id="reloadWhiteList" ${isProgressBarWorking ? 'disabled' : ''}> Обновить список сейчас </button>
+		</div>
 		
 		<div class="setting">
 			<button id="authByte"> Изменить конфигурацию </button>
@@ -535,6 +549,33 @@ async function loadLastType() {
 	setActiveConnectionType(connectionType);
 }
 
+
+
+async function LaunchHostsUpdate() {
+	ProgressBarVisibility(true);
+	SetProgress(0, 0);
+	runLater(async() => {
+		await SetProgress(10, 200);
+		fetcher('https://raw.githubusercontent.com/0mnr0/ownify/refs/heads/main/whitelist.json', 'GET', null).then(async (res) => {
+			await SetProgress(random(50, 70), 500);
+			let NewList = (await chrome.storage.local.get('WhiteListed')).WhiteListed;
+			if (typeof NewList !== 'object') {NewList = []}
+			NewList = [...new Set([...NewList, ...res.values])]
+			WhiteList = NewList;
+			await chrome.storage.local.set({ WhiteListed: NewList });
+			await SetProgress(90, 300);
+			WhiteListSites = WhiteList;
+			if (isEditorOpened) {
+				UpdateWhiteList();
+			}
+			await SetProgress(100, 100);
+			runLater(()=>{
+				ProgressBarVisibility(false);
+			}, 200)
+		})
+	}, 150);
+}
+
 async function ShowGitHubHosts(){
 	let checkValue = GitHubHosts.querySelector('input#FirstOpenedSetting');
 	GitHubHosts.zIndex = 5;
@@ -551,13 +592,7 @@ async function ShowGitHubHosts(){
 		
 		runLater(() => {
 			if (!NeedAutoSync) {return}
-			fetcher('https://raw.githubusercontent.com/0mnr0/ownify/refs/heads/main/whitelist.json', 'GET', null).then(async (res) => {
-				await chrome.storage.local.set({ WhiteListed: res.values });
-				WhiteListSites = res.values;
-				if (isEditorOpened) {
-					UpdateWhiteList();
-				}
-			})
+			LaunchHostsUpdate();
 		}, 200);
 		ClosePopup();
 	})
@@ -645,6 +680,58 @@ function AITG(str) {
   ).join('');
 }
 
+function ProgressBarVisibility(state) {
+	ProgressDiv.bottom = (state ? 10 : -50) + 'px';
+}
+
+async function SetProgress(toValue, duration = 1000) {
+  return new Promise(resolve => {
+	isProgressBarWorking = true;
+    const fromValue = Number(ProgressBar.value);
+    const startTime = performance.now();
+
+    if (duration === 0 || fromValue === toValue) {
+      ProgressBar.value = toValue;
+      ProgressBar.style.setProperty('--p', toValue);
+	  isProgressBarWorking = false;
+	  endProgressAnimation();
+      resolve();
+      return;
+    }
+
+    function easeInOutQuad(t) {
+      return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+    }
+
+    function step(currentTime) {
+      const elapsed = currentTime - startTime;
+      let t = Math.min(elapsed / duration, 1);
+      const eased = easeInOutQuad(t);
+      const current = Math.round(fromValue + (toValue - fromValue) * eased);
+
+      ProgressBar.value = current;
+      ProgressBar.style.setProperty('--p', current);
+
+      if (t < 1) {
+        requestAnimationFrame(step);
+      } else {
+		isProgressBarWorking = false;
+		endProgressAnimation();
+        resolve(); // Анимация завершена
+      }
+    }
+
+    requestAnimationFrame(step);
+  });
+}
+
+function endProgressAnimation(){
+	if (UpdateWhiteListButton) {
+		UpdateWhiteListButton.disabled = false;
+	}
+}
+
+
 
 function fetcher(url, method = 'GET', data = null) {
     const options = {
@@ -665,3 +752,4 @@ function fetcher(url, method = 'GET', data = null) {
             return response.json();
         });
 }
+
