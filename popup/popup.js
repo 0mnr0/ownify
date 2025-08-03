@@ -583,7 +583,7 @@ async function loadLastType() {
 
 
 async function LaunchHostsUpdate() {
-	UpdateWhiteListButton.disabled = true;
+	if (UpdateWhiteListButton) { UpdateWhiteListButton.disabled = true; }
 	ProgressBarVisibility(true);
 	SetProgress(0, 0);
 	runLater(async() => {
@@ -594,9 +594,10 @@ async function LaunchHostsUpdate() {
 			if (typeof NewList !== 'object') {NewList = []}
 			NewList = [...new Set([...NewList, ...res.values])]
 			WhiteList = NewList;
+			WhiteListSites = WhiteList;
 			await chrome.storage.local.set({ WhiteListed: NewList });
 			await SetProgress(90, 300);
-			WhiteListSites = WhiteList;
+			await sleep(300);
 			if (isEditorOpened) {
 				UpdateWhiteList();
 			}
