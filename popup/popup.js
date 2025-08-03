@@ -124,7 +124,7 @@ function CreateAnimation(isVpnifyed){
 	  runLater(() => {
 		  VectorImage.style.transition = 'all 1s cubic-bezier(0.49, -0.31, 0.86, 1.05), rotate 1s cubic-bezier(0.61, 1.21, 1, 1), opacity .1s';
 		  VectorImage.top = 'calc(100% - 40px)';
-		  VectorImage.left = (directionSide==="L" ? random(20, 120) : random(220, 280))+'px';
+		  VectorImage.left = (directionSide==="L" ? random(20, 100) : random(240, 280))+'px';
 		  VectorImage.rotate = (startRotation/2)+'deg';
 	  }, 200);
 	  
