@@ -246,8 +246,7 @@ WhiteListEditor.addEventListener('click', async () => {
 	
 	if (!isEditorOpened && typeof WhiteListSites !== 'undefined') {
 		UpdateWhiteList(true);
-		console.log('CurrentTabUrl:'+CurrentTabUrl, WhiteListSites !== undefined && WhiteListSites.indexOf(CurrentTabUrl) < 0);
-		if (WhiteListSites !== undefined && WhiteListSites.indexOf(CurrentTabUrl) < 0) {
+		if (WhiteListSites !== undefined) {
 			EditorTextField.value = CurrentTabUrl;
 		}
 	}

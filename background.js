@@ -263,9 +263,8 @@ chrome.runtime.onSuspend.addListener(async() => {
 	disableProxy();
 });
 
-chrome.tabs.onActivated.addListener(async ({ tabId, windowId }) => {
-  chrome.tabs.get(tabId, (tab) => {
-    if (chrome.runtime.lastError || !tab || !tab.url) return;
+chrome.tabs.onActivated.addListener((activeInfo) => {
+  chrome.tabs.get(activeInfo.tabId, (tab) => {
 		lastUrl = tab.url;
   });
 });
