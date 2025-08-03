@@ -1,10 +1,10 @@
 {
   "manifest_version": 3,
+  "description": "Use your Own Proxy for internet access",
   "name": "Ownify",
   "version": "1.0.0",
   "permissions": [
     "privacy",
-	"scripting",
     "proxy",
     "storage",
 	"webRequest",
