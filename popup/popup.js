@@ -30,6 +30,7 @@ const SettingsList = find('div.settingsSection .SettingsList');
 const GitHubHosts = find('div.GitHubHosts');
 const ProgressDiv = find('div.ProgressBar');
 const ProgressBar = find('div.ProgressBar progress');
+const DisableOthersScreen = find('div.DisableOthersScreen');
 
 let UpdateWhiteListButton = null;
 subtitle.textContent = SUBTITLE_TEXT;
@@ -553,7 +554,40 @@ chrome.runtime.onMessage.addListener((message, sender) => {
 		  CurrentTabUrl === '';
 	  }
   }
+  
+  console.log(message);
+  if (message.conflictChecker) {
+		ConflictScreenVisibility(message.foundedConflict);
+		if (!message.foundedConflict || message.value.length === 0) {return;}
+		
+		DisableOthersScreen.querySelector('div.extList').innerHTML = ``;
+		for (let i = 0; i < message.value.length; i++) {
+			DisableOthersScreen.querySelector('div.extList').innerHTML += `
+				<span title="${message.value[i]}"> ${message.value[i]} </span>
+			`;
+		}
+		
+  }
 });
+
+DisableOthersScreen.querySelector('button').addEventListener('click', async() => {
+	ConflictScreenVisibility(false);
+	await chrome.runtime.sendMessage({action: 'removeConflicts'}).then(res => {
+		console.log('ok!');
+	});
+});
+
+function ConflictScreenVisibility(state) {
+	if (state) {
+		DisableOthersScreen.zIndex = 6;
+		DisableOthersScreen.opacity = 1;
+	} else {
+		DisableOthersScreen.opacity = 0;
+		runLater(() => {
+			DisableOthersScreen.zIndex = -5;
+		}, 400)
+	}
+}
 
 function capitalizeFirstLetter(val) {
     return String(val).charAt(0).toUpperCase() + String(val).slice(1);
@@ -579,7 +613,6 @@ async function loadLastType() {
 	connectionType = type;
 	setActiveConnectionType(connectionType);
 }
-
 
 
 async function LaunchHostsUpdate() {
@@ -690,7 +723,9 @@ function StartAuth(cancelable) {
 	AnimateVPNButton(isNowEnabled, false);
 
 
-	chrome.runtime.sendMessage({ action: "getUrl" });
+	await chrome.runtime.sendMessage({ action: "getUrl" });
+	chrome.runtime.sendMessage({ action: "requestConflicts" });
+	
 	WhiteListSites = (await chrome.storage.local.get('WhiteListed')).WhiteListed;
 	if (typeof WhiteListSites !== 'undefined') {startLength = WhiteListSites.length; }
 	let ServerData = (await chrome.storage.local.get('ServerData')).ServerData;

@@ -12,6 +12,7 @@
 	"declarativeNetRequest",
 	"declarativeNetRequestWithHostAccess",
 	"webNavigation",
+	"management",
 	"tabs"
   ],
   "host_permissions": ["<all_urls>"],

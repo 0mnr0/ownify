@@ -2,6 +2,8 @@ let __SettingsLoader__;
 let __disableProxy__;
 let __LaunchNeededProxy__;
 let WhiteList = [];
+let ExtensionList = [];
+let conflictList = [];
 
 (async () => {
 let lastUrl = '';
@@ -47,6 +49,7 @@ chrome.webRequest.onAuthRequired.addListener(
     { urls: ["<all_urls>"] },
     ["blocking"]
 );
+
 
 
 async function enableProxy() {
@@ -109,6 +112,7 @@ async function GetSettingBool(name) {
 
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+	console.log('inMessage:',msg);
     if (msg.action === "toggleProxy") {
 		(async() => {
 			await msg.enabled ? LaunchNeededProxy() : disableProxy();
@@ -119,6 +123,21 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 	
 	if (msg.action === "reloadSettings") {
 		(async() => { await SettingsLoader(); })()
+	}
+	
+	if (msg.action === "requestConflicts") {
+		(async() => {
+			GetExtensions();
+		})();
+	}
+	
+	if (msg.action === "removeConflicts") {
+		(async() => { 
+			RemoveConflicts();
+			GetExtensions();
+			sendResponse({value: 'ok'})
+		})();
+		
 	}
 	
 	if (msg.action === "reloadInAppSettings") {
@@ -145,6 +164,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 	}
 	if (msg.action === "getUrl") {
 		chrome.runtime.sendMessage({ 'getUrl': lastUrl });
+		return false;
 	}
 	return true;
 
@@ -420,3 +440,48 @@ function isJson(obj) {
 }
 
 
+
+function RemoveConflicts() { 
+	ExtensionList.forEach((ext) => {
+		if (
+		  ext.enabled &&
+		  ext.permissions?.includes("proxy") &&
+		  ext.id !== chrome.runtime.id
+		) {
+		  console.log(`Отключаю конфликтующее расширение: ${ext.name}`);
+
+		  chrome.management.setEnabled(ext.id, false, () => {
+			if (chrome.runtime.lastError) {
+			  console.warn(`Не удалось отключить ${ext.name}:`, chrome.runtime.lastError.message);
+			} else {
+			  console.log(`${ext.name} успешно отключено`);
+			}
+		  });
+		}
+	  });
+}
+
+function GetExtensions() {
+	ExtensionList = [];
+	conflictList = [];
+	chrome.management.getAll((extensions) => {
+	  extensions.forEach((ext) => {
+		  ExtensionList.push(ext);
+		  if (ext.enabled && ext.permissions?.includes("proxy") && ext.id !== chrome.runtime.id) {
+			  conflictList.push(ext.name);
+		  }
+	  });
+	  console.warn(conflictList);
+	  if (conflictList.length >= 1) {
+		    chrome.runtime.sendMessage({ 'conflictChecker': true, 'foundedConflict': true, 'value': conflictList });
+	  } else {
+			chrome.runtime.sendMessage({ 'conflictChecker': true, 'foundedConflict': false });
+	  }
+	  
+	});
+	
+	
+}
+
+setInterval(GetExtensions, 5000);
+GetExtensions();
