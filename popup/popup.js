@@ -555,7 +555,6 @@ chrome.runtime.onMessage.addListener((message, sender) => {
 	  }
   }
   
-  console.log(message);
   if (message.conflictChecker) {
 		ConflictScreenVisibility(message.foundedConflict);
 		if (!message.foundedConflict || message.value.length === 0) {return;}
@@ -573,7 +572,7 @@ chrome.runtime.onMessage.addListener((message, sender) => {
 DisableOthersScreen.querySelector('button').addEventListener('click', async() => {
 	ConflictScreenVisibility(false);
 	await chrome.runtime.sendMessage({action: 'removeConflicts'}).then(res => {
-		console.log('ok!');
+		Toast.create('Отключено всё!', 1200)
 	});
 });
 
@@ -618,6 +617,7 @@ async function loadLastType() {
 async function LaunchHostsUpdate() {
 	if (UpdateWhiteListButton) { UpdateWhiteListButton.disabled = true; }
 	ProgressBarVisibility(true);
+	CreateStyle('WorkingProgress', 'div.toast.visible {bottom: 55px}' );
 	SetProgress(0, 0);
 	runLater(async() => {
 		await SetProgress(10, 200);
@@ -638,6 +638,8 @@ async function LaunchHostsUpdate() {
 			runLater(()=>{
 				ProgressBarVisibility(false);
 				endProgressAnimation();
+				RemoveStyle('WorkingProgress');
+				Toast.create('Список обновлён!', 1000, 'OK')
 			}, 200)
 		})
 	}, 150);

@@ -471,16 +471,13 @@ function GetExtensions() {
 			  conflictList.push(ext.name);
 		  }
 	  });
-	  console.warn(conflictList);
 	  if (conflictList.length >= 1) {
 		    chrome.runtime.sendMessage({ 'conflictChecker': true, 'foundedConflict': true, 'value': conflictList });
 	  } else {
 			chrome.runtime.sendMessage({ 'conflictChecker': true, 'foundedConflict': false });
 	  }
 	  
-	});
-	
-	
+	});	
 }
 
 setInterval(GetExtensions, 5000);

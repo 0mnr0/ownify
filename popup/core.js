@@ -175,6 +175,15 @@ function RemoveStyle(id) {
 	let DebugHitboxes = false;
 	let VideoControlsInterval = null;
 	const debug = {
+		outlinedHits: function() {
+			if (!DebugHitboxes) { 
+				CreateStyle('dbghits2',  'html * {outline: solid 1px red !important}');
+			} else {
+				RemoveStyle('dbghits2');
+			}
+			
+			DebugHitboxes = !DebugHitboxes;
+		},
 		hits: function() {
 			if (!DebugHitboxes) { 
 				CreateStyle('dbghits',  'html * {border: solid 1px red !important}');
