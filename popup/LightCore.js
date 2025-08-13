@@ -2,23 +2,31 @@ const find = function(selector) { return document.querySelector(selector) };
 const findAll = function(selector) { return document.querySelectorAll(selector) };
 const findById = function(selector) { return document.getElementById(selector) };
 const example = find("h2");
+const HTML = document.head.parentElement;
 const body = document.body;
 const head = document.head;
 const none = "none"; const None = "none"; const NONE = "none";
 const print = console.log;	
+const log = console.log;	
+const warn = console.warn;	
 const sleep = ms => new Promise(res => setTimeout(res, ms));
 const absolute = 'absolute'; const relative = 'relative'; const PRC = '100%'; const center = 'center';
 const scale = 'scale'; 
+const __LightCoreDebug__ = false;
+const random = (min, max) => {
+    min = Math.ceil(min);
+    return Math.floor(Math.random() * (Math.floor(max) - min + 1)) + min;
+}
 
 
-async function runLater(fun, time) {
+const runLater = async (fun, time) => {
 	if (typeof time !== 'number') {time = 1000;}
 	await sleep(time);
 	await sleep(time);
 	fun();
 }
 
-function CreateStyle(id, style) {
+const CreateStyle = (id, style) => {
 	let styleElement = document.createElement('style');
 	styleElement.textContent = style;
 	styleElement.id = id;
@@ -26,8 +34,8 @@ function CreateStyle(id, style) {
 	return styleElement;
 }
 
-function RemoveStyle(id) {
-	if (findById(id)) { findById(id).remove(); return 1;} return 0;
+const RemoveStyle = (id) => {
+	if (findById(id)) { findById(id).remove(); return true;} return false;
 }
 
 (function() { 
@@ -41,21 +49,24 @@ function RemoveStyle(id) {
 		return parseFloat(getComputedStyle(this).opacity);
 	}
 	
-	HTMLElement.prototype.setCycleAnimation = function(fun, pauseTime, timesCalling, isInterval) {
-		if (isInterval) {
-			const intId = setInterval(fun, pauseTime);
-			this.setAttribute("cycledAnimationId", intId);
-			return intId;
-		} else {
-			for (let i = 0; i<timesCalling; i++) {
-				setTimeout(fun, (pauseTime * (1+i)));
-			}
-			return 0;
-		}
+	HTMLElement.prototype.find = function(selector) {
+		return this.querySelector(selector);
 	}
 	
-	HTMLElement.prototype.removeCycleAnimation = function() {
-		clearInterval(Number(this.getAttribute("cycledAnimationId")));
+	HTMLElement.prototype.findAll = function(selector) {
+		return this.querySelectorAll(selector);
+	}
+	
+	HTMLElement.prototype.onEvent = function(type, listener, useCapture) {
+		return this.addEventListener(type, listener, useCapture);
+	}
+	
+	HTMLElement.prototype.listen = function(type, listener, useCapture) {
+		return this.addEventListener(type, listener, useCapture);
+	}
+	
+	HTMLElement.prototype.addEvent = function(type, listener, useCapture) {
+		return this.addEventListener(type, listener, useCapture);
 	}
 	
 	HTMLElement.prototype.disableAnimations = async function(disableFor, unlockTime) {
@@ -167,22 +178,26 @@ function RemoveStyle(id) {
 					 }
 				})
 			}
-		} catch(e) {console.log(`Failed to add "${attributes[i]}" property into "HTMLElement.prototype", passed!`);}
+		} catch(e) {
+			if (__LightCoreDebug__) { console.log(`Failed to add "${attributes[i]}" property into "HTMLElement.prototype", passed!`); }
+		}
 	}
 	
 	
 	
 	let DebugHitboxes = false;
+	let DebugOutlinedHitboxes = false;
 	let VideoControlsInterval = null;
 	const debug = {
 		outlinedHits: function() {
-			if (!DebugHitboxes) { 
+			if (!DebugOutlinedHitboxes) { 
 				CreateStyle('dbghits2',  'html * {outline: solid 1px red !important}');
 			} else {
 				RemoveStyle('dbghits2');
 			}
 			
-			DebugHitboxes = !DebugHitboxes;
+			DebugOutlinedHitboxes = !DebugOutlinedHitboxes;
+			return DebugOutlinedHitboxes;
 		},
 		hits: function() {
 			if (!DebugHitboxes) { 
@@ -192,6 +207,7 @@ function RemoveStyle(id) {
 			}
 			
 			DebugHitboxes = !DebugHitboxes;
+			return DebugHitboxes;
 		},
 		videoControls: function(){
 			if (VideoControlsInterval === null) {
@@ -211,7 +227,7 @@ function RemoveStyle(id) {
 
 
 
-const createElement = function(elementType, elementProps) {
+const createElementWith = (elementType, elementProps) => {
 	let newElement = document.createElement(elementType);
 	
 	// elementProps example:
@@ -228,3 +244,99 @@ const createElement = function(elementType, elementProps) {
 	newElement.into = function() {return 0}
 	return newElement
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//      █████╗  ██████╗ ██████╗███████╗███████╗███████╗ ██████╗ ██████╗      ██████╗ ██████╗ ██████╗ ███████╗
+//     ██╔══██╗██╔════╝██╔════╝██╔════╝██╔════╝██╔════╝██╔═══██╗██╔══██╗    ██╔════╝██╔═══██╗██╔══██╗██╔════╝
+//     ███████║██║     ██║     █████╗  ███████╗███████╗██║   ██║██████╔╝    ██║     ██║   ██║██████╔╝█████╗  
+//     ██╔══██║██║     ██║     ██╔══╝  ╚════██║╚════██║██║   ██║██╔══██╗    ██║     ██║   ██║██╔══██╗██╔══╝  
+//     ██║  ██║╚██████╗╚██████╗███████╗███████║███████║╚██████╔╝██║  ██║    ╚██████╗╚██████╔╝██║  ██║███████╗
+//     ╚═╝  ╚═╝ ╚═════╝ ╚═════╝╚══════╝╚══════╝╚══════╝ ╚═════╝ ╚═╝  ╚═╝     ╚═════╝ ╚═════╝ ╚═╝  ╚═╝╚══════╝
+                                                                                                      
+
+
+
+
+(function(){
+	
+	// Alpha object [set, get]
+	Object.defineProperty(HTMLElement.prototype, 'alpha', {
+	  get() {
+		return parseFloat(getComputedStyle(this).opacity);
+	  },
+	  set(value) {
+		if (typeof value === 'number' && value >= 0 && value <= 1) {
+		  this.style.opacity = value;
+		} else {
+		  throw new Error("Alpha must be between 0 and 1");
+		}
+	  }
+	});
+	
+	
+	Object.defineProperty(HTMLElement.prototype, 'destroy', {
+		value: function () {
+			this.remove();
+			return null;
+		}
+	})
+	
+	
+	
+	Object.defineProperty(HTMLElement.prototype, 'cornerRadius', {
+	  get() {
+		return parseFloat(getComputedStyle(this).borderRadius);
+	  },
+	  set(value) {
+		this.borderRadius = value+'px';
+	  }
+	});
+	
+	
+	
+	// Real width object [get]
+	Object.defineProperty(HTMLElement.prototype, 'realWidth', {
+	    get() { return this.scrollWidth; }
+	});
+	Object.defineProperty(HTMLElement.prototype, 'realHeight', {
+	    get() { return this.scrollHeight; }
+	});
+	
+	
+})();

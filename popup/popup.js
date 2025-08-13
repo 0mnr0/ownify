@@ -36,13 +36,6 @@ let UpdateWhiteListButton = null;
 subtitle.textContent = SUBTITLE_TEXT;
 let AuthWindow = find('div.AuthWindow');
 
-
-
-
-const random = function(min, max) { // min and max included
-  return Math.floor(Math.random() * (max - min + 1) + min)
-}
-
 async function AnimateBlock(state) {
 	let animationBlock = document.createElement('span');
 	animationBlock.classList = 'animationBlock';
