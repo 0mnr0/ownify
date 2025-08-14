@@ -266,7 +266,7 @@ EditorTextField.onEvent('input', async () => {
 	let FoundedSites = [];
 	if (typeof WhiteListSites === 'undefined') { WhiteListSites = []; }
 	if (EditorTextField.value.toLowerCase().replaceAll(" ","").length === 0 || WhiteListSites.length === 0) {
-		find('div.ListEditorScreen').click();
+		CloseLastSearchDialog();
 		return;
 	}
 	
@@ -284,7 +284,10 @@ EditorTextField.onEvent('input', async () => {
 			`
 		}
 	}
-	
+	if (FoundedSites.length === 0) {
+		CloseLastSearchDialog();
+		return;
+	}
 	if (LastDialog !== null) {
 		CloseLastSearchDialog();
 	}
