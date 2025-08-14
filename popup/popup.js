@@ -31,6 +31,7 @@ const GitHubHosts = find('div.GitHubHosts');
 const ProgressDiv = find('div.ProgressBar');
 const ProgressBar = find('div.ProgressBar progress');
 const DisableOthersScreen = find('div.DisableOthersScreen');
+const userStuckScreen = find('div.userStuckScreen');
 
 let UpdateWhiteListButton = null;
 subtitle.textContent = SUBTITLE_TEXT;
@@ -381,7 +382,7 @@ async function GetActualSetting() {
 				</label>
 				<span onclick="document.getElementById('WhiteList:FromGitHub').click()"> Stuck Detector </span>
 			</div>
-			<span class="desc"> Если сайт не загружается - он автоматически добавляется в WhiteList и перезагружает соединение </span>
+			<span class="desc"> Если сайт не загружается - будет предложено добавить сайт в WhiteList. (Только HTTPS сайты) </span>
 		</div>
 		
 		<div class="setting DoubleAction top" >
@@ -547,6 +548,10 @@ chrome.runtime.onMessage.addListener((message, sender) => {
 		  CurrentTabUrl === '';
 	  }
   }
+  if (message.stuckData) {
+	  console.log(message.stuckData);
+	  LaunchStuckMessage(message.stuckData);
+  }
   
   if (message.conflictChecker) {
 		ConflictScreenVisibility(message.foundedConflict);
@@ -604,6 +609,31 @@ async function loadLastType() {
 	if (type === undefined) {type = "on"}
 	connectionType = type;
 	setActiveConnectionType(connectionType);
+}
+
+async function LaunchStuckMessage (data) {
+	body.height = userStuckScreen.realHeight+'px';
+	userStuckScreen.makeZeroAnimation(() => {userStuckScreen.zIndex = 9;}, ['zIndex']);
+	runLater(() => {
+		body.makeZeroAnimation(() => {
+			body.height = userStuckScreen.realHeight+'px';
+		}, 'height');
+	}, 50);
+	console.log(data);
+	userStuckScreen.find('h3').textContent = getCleanDomain(data.url);
+	userStuckScreen.find('span').textContent = `Не загружается. Добавить в белый список и открыть заново?`;
+	userStuckScreen.find('button#declineWhiteList').onEvent('click', () => {
+		window.close();
+	})
+	userStuckScreen.find('button#acceptWhiteList').onEvent('click', async () => {
+		let NewList = (await chrome.storage.local.get('WhiteListed')).WhiteListed;
+		if (typeof NewList !== 'object') {NewList = []}
+		NewList.push(getCleanDomain(data.url));
+		WhiteListSites = NewList;
+		await chrome.storage.local.set({ WhiteListed: NewList });
+		chrome.runtime.sendMessage({action: "reloadSite", tabId: data.tabId, url: data.url});
+		window.close();
+	})
 }
 
 

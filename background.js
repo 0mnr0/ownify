@@ -166,6 +166,24 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 		chrome.runtime.sendMessage({ 'getUrl': lastUrl });
 		return false;
 	}
+	if (msg.action === "reloadSite") {
+		(async () => {
+			await __SettingsLoader__();
+			if (await GetBool('enabled')) {
+				await __disableProxy__();
+				await __LaunchNeededProxy__();
+				chrome.tabs.reload(msg.tabId, { bypassCache: true }, () => {
+					if (chrome.runtime.lastError) {
+						console.error("Не удалось перезагрузить вкладку:", chrome.runtime.lastError.message);
+					} else {
+						console.log(`Вкладка ${msg.tabId} (${msg.url}) была перезагружена.`);
+					}
+				});
+			}
+		})();
+		
+		return false;
+	}
 	return true;
 
 });
@@ -332,6 +350,19 @@ function fetcher(url, method = 'GET', data = null) {
 }
 
 
+// background.js
+async function openAndSend(data) {
+	if ((await chrome.storage.local.get('ServerData')).ServerData && await GetBool('StuckDetector')) {
+		chrome.action.openPopup(() => {
+			if (chrome.runtime.lastError) {
+				console.error(chrome.runtime.lastError);
+				return;
+			}
+			chrome.runtime.sendMessage({ 'stuckData': data });
+		});
+	}
+}
+
 
 
 const pendingLoads = {}; // { tabId: { timer, startTime } }
@@ -351,47 +382,30 @@ chrome.webNavigation.onBeforeNavigate.addListener((details) => {
     // Устанавливаем таймер
     const timer = setTimeout(() => {
         console.log(`Страница в табе ${tabId} грузится больше ${waitingTime} секунд — возможно, зависла.`);
-        
+
 		chrome.tabs.get(tabId, (tab) => {
+			if (tab.url.indexOf("https://") < 0) {return;}
 			if (chrome.runtime.lastError) {
 				console.warn("Не удалось получить таб:", chrome.runtime.lastError.message);
 				return;
 			}
 
 			const url = getCleanDomain(tab.url);
-			if (tab.url.indexOf('t.me/') >= 0) {url="t.me";}
-			console.log(`URL для таба ${tabId}: ${url} | ${tab.url}`);
 			if (url === null) {return;}
+			if (tab.url.indexOf('t.me/') >= 0) {url="t.me";}
+			
+			
+			console.log(`URL для таба ${tabId}: ${url} | ${tab.url}`);
+			
+			
+			
 			
 			fetcher('https://www.google.com/', 'GET', null).then(res => {
-				console.log(`${url} stuck detected! | Ping to google.com success!`);
 				(async() => {
 					if (!await GetBool('StuckDetector')) {
 						return;
 					}
-					
-					let NewList = (await chrome.storage.local.get('WhiteListed')).WhiteListed;
-					if (typeof NewList !== 'object') {NewList = []}
-					if (NewList.indexOf(url) >= 0) {
-						console.log(`${url} is already in white list. Returning...`);
-						return;					
-					}
-					NewList = [...new Set([...NewList, ...[url]])]
-					WhiteList = NewList;
-					await chrome.storage.local.set({ WhiteListed: NewList });
-					await __SettingsLoader__();
-					if (await GetBool('enabled')) {
-						await __disableProxy__();
-						await __LaunchNeededProxy__();
-						chrome.tabs.reload(tabId, { bypassCache: true }, () => {
-							if (chrome.runtime.lastError) {
-								console.error("Не удалось перезагрузить вкладку:", chrome.runtime.lastError.message);
-							} else {
-								console.log(`Вкладка ${tabId} (${url}) была перезагружена.`);
-							}
-						});
-
-					}
+					openAndSend({tabId: tabId, url: tab.url});
 				})();
 			}).catch(err => {
 				console.warn(err);
