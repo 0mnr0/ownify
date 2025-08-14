@@ -184,7 +184,7 @@ function UpdateWhiteList(animate){
 		WhiteSite.className = 'Rule';
 		WhiteSite.innerHTML = `
 			<img alt="" crossorigin="anonymous" src=${GetSiteIcon(OriginalSiteName)} class="ICONSITE">
-			<input type="text" placeholder="${OriginalSiteName}" value="${OriginalSiteName}" onchange="alert()"></input>
+			<input type="text" placeholder="${OriginalSiteName}" value="${OriginalSiteName}"></input>
 			<button> 🗑️ </button>
 		`;
 		const IconSite = WhiteSite.querySelector('img');
@@ -194,7 +194,6 @@ function UpdateWhiteList(animate){
 			if (darkImg < 40) {  IconSite.filter = 'invert(1) hue-rotate(180deg)' } } catch(e) {}
 		}, 75*i);
 		
-		let InputField = WhiteSite.querySelector('input');
 		WhiteSite.querySelector('button').addEventListener('click', async () => {
 			WhiteListSites = WhiteListSites.filter(item => item !== OriginalSiteName);
 			await chrome.storage.local.set({ WhiteListed: WhiteListSites })
@@ -202,7 +201,8 @@ function UpdateWhiteList(animate){
 			UpdateWhiteList(false);
 		});
 		
-		InputField.addEventListener('input', async () => {
+		let InputField = WhiteSite.querySelector('input');
+		InputField.addEventListener('input', async () => {// Mini blocks of sites
 			if (typeof WhiteListSites === "undefined") {WhiteListSites = [];}
 			WhiteListSites[WhiteListSites.indexOf(OriginalSiteName)] = WhiteSite.querySelector('input').value;
 			OriginalSiteName = WhiteSite.querySelector('input').value;
@@ -252,16 +252,66 @@ WhiteListEditor.addEventListener('click', async () => {
 	}
 	
 	isEditorOpened = !isEditorOpened;
-})
+});
 
-EditorButton.onclick = async ()=>{
-	if (EditorTextField.value.length === 0) {return;}
-	if (typeof WhiteListSites === 'undefined') {
-		WhiteListSites = [];
+function CloseLastSearchDialog() {
+	let TheLastDialog = LastDialog; LastDialog = null;
+	TheLastDialog.opacity = 0; TheLastDialog.backdropFilter = '';
+	runLater(() => {TheLastDialog.remove()}, 300);
+}
+
+
+let LastDialog = null;
+EditorTextField.onEvent('input', async () => {
+	let FoundedSites = [];
+	if (typeof WhiteListSites === 'undefined') { WhiteListSites = []; }
+	if (EditorTextField.value.toLowerCase().replaceAll(" ","").length === 0 || WhiteListSites.length === 0) {
+		find('div.ListEditorScreen').click();
+		return;
 	}
 	
-	if (WhiteListSites.indexOf(getCleanDomain(EditorTextField.value)) >= 0) {
-		const FoundedElement = DisplayList.querySelector(`div.Rule > input[value="${getCleanDomain(EditorTextField.value)}"]`).parentElement; if (FoundedElement===null) {return;}
+	let InnerContent = '';
+	for (let i = 0; i < WhiteListSites.length; i++) {
+		const Site = WhiteListSites[i];
+		if (Site.indexOf(EditorTextField.value.toLowerCase()) >= 0) { 
+			FoundedSites.push(Site);
+			InnerContent += `
+				<div class="line" >
+					<img src="arrow_back.svg" class="goTo">
+					<img src="${GetSiteIcon(getCleanDomain(Site))}" class="logo">
+					<span> ${Site} </span>
+				</div>
+			`
+		}
+	}
+	
+	if (LastDialog !== null) {
+		CloseLastSearchDialog();
+	}
+	
+	LastDialog = document.createElement('div');
+	LastDialog.title = 'Поиск в белом списке';
+	LastDialog.className = 'FilteredDIV';
+	LastDialog.innerHTML = InnerContent;
+	body.appendChild(LastDialog);
+	LastDialog.findAll('div.line').forEach(line => {
+		line.onEvent('click', () => {
+			const SearchingFor = line.find('span').textContent.replaceAll(' ','');
+			HightlightSiteElement(SearchingFor);
+			CloseLastSearchDialog();
+		})
+	})
+	
+	
+})
+find('div.ListEditorScreen').onEvent('click', () => {
+	if (LastDialog) {
+		CloseLastSearchDialog();
+	}
+})
+
+async function HightlightSiteElement(siteUrl) {
+	const FoundedElement = DisplayList.querySelector(`div.Rule > input[value="${getCleanDomain(siteUrl)}"]`).parentElement; if (FoundedElement===null) {return;}
 		DisplayList.scroll({
 		    top: FoundedElement.offsetTop - 10,
 		    left: 0,
@@ -272,7 +322,16 @@ EditorButton.onclick = async ()=>{
 			await sleep(500);
 		}
 		FoundedElement.boxShadow = ''; 
+}
 
+EditorButton.onclick = async ()=>{
+	if (EditorTextField.value.length === 0) {return;}
+	if (typeof WhiteListSites === 'undefined') {
+		WhiteListSites = [];
+	}
+	
+	if (WhiteListSites.indexOf(getCleanDomain(EditorTextField.value)) >= 0) {
+		HightlightSiteElement(EditorTextField.value);
 		return;
 	} else {
 		WhiteListSites.push(getCleanDomain(EditorTextField.value));
@@ -287,7 +346,8 @@ find('div.ListEditorScreen div.topbar').onclick = () => {
 	WhiteListEditor.click();
 }
 document.addEventListener('keydown', function(event) {
-  if ((event.key === 'Escape' || event.key === 'Esc') && (isEditorOpened || isSettingsOpened)) {
+  if ((event.key === 'Escape' || event.key === 'Esc') && (isEditorOpened || isSettingsOpened || LastDialog)) {
+	  if (LastDialog) { CloseLastSearchDialog(); event.preventDefault(); return;}
 	  if (isSettingsOpened) { SettingsIcon.click(); } else {WhiteListEditor.click();}
       event.preventDefault();
   }

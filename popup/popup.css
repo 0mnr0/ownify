@@ -144,6 +144,71 @@ div.WhiteListEditor img {
 	position: absolute; left: 25%; width: 24px; height: 24px; top: 50%; cursor: pointer; transform: translateY(-50%) scale(0.9);
 }
 
+.FilteredDIV {
+    position: absolute;
+    z-index: 5;
+    top: 105px;
+    width: 75%;
+    backdrop-filter: blur(16px) brightness(0.75);
+    display: flex;
+    flex-direction: column;
+    left: 10px;
+    gap: 5px;
+    padding: 5px;
+    border-radius: 20px;
+	border: solid 1px white;
+	max-height: 160px;
+	transition: all .3s;
+	overflow: auto;
+}
+
+.FilteredDIV::-webkit-scrollbar { display: none;}
+.FilteredDIV { scrollbar-width: none; -ms-overflow-style: none; }
+
+.FilteredDIV .line {
+	position: relative;
+    display: flex;
+	min-height: 30px;
+	gap: 10px;
+	overflow: hidden;
+	cursor: pointer;
+    align-items: center;
+}
+
+.FilteredDIV .line:hover img.goTo {
+	opacity: 0.85;
+	transform: translateX(-5px)
+}
+
+.FilteredDIV .line span {
+    white-space: nowrap;
+    max-width: 75%;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+
+.FilteredDIV .line img.logo {
+    min-width: 30px;
+    max-width: 30px;
+    margin-left: -30px;
+    width: 30px;
+    aspect-ratio: 1/1;
+    border-radius: 100%;
+}
+
+.FilteredDIV .line img.goTo {
+    position: relative;
+    min-width: 20px;
+	transition: all .2s;
+    max-width: 20px;
+    width: 20px;
+    opacity: 0.75;
+    aspect-ratio: 1/1;
+    float: right;
+    left: calc(100% - 20px);
+    rotate: 180deg;
+}
 
 span.background {
     position: absolute;
