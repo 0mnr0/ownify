@@ -754,6 +754,8 @@ async function ShowGitHubHosts(){
 function StartAuth(cancelable) {
 		if (isSettingsOpened) {SwitchSettings();}
 		if (!cancelable) { userAuthed = false; }
+		chrome.storage.local.set({ enabled: false });
+		chrome.runtime.sendMessage({ action: "toggleProxy", enabled: false });
 		AuthWindow.display = "flex";
 		AuthWindow.zIndex = 10;
 		AuthWindow.backdropFilter = 'blur(10px)';
