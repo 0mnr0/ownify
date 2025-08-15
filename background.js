@@ -405,7 +405,10 @@ chrome.webNavigation.onBeforeNavigate.addListener((details) => {
 					if (!await GetBool('StuckDetector')) {
 						return;
 					}
-					openAndSend({tabId: tabId, url: tab.url});
+					const WH = (await chrome.storage.local.get('WhiteListed')).WhiteListed;
+					if (WH && WH.indexOf(url) < 0) {
+						openAndSend({tabId: tabId, url: tab.url});
+					}
 				})();
 			}).catch(err => {
 				console.warn(err);
