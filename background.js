@@ -390,6 +390,7 @@ chrome.webNavigation.onBeforeNavigate.addListener((details) => {
 				return;
 			}
 
+			if (tab.url.indexOf('https') < 0) {console.log(tab.url + ' is not HTTPS!'); return;}
 			const url = getCleanDomain(tab.url);
 			if (url === null) {return;}
 			if (tab.url.indexOf('t.me/') >= 0) {url="t.me";}
