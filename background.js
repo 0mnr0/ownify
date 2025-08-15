@@ -367,73 +367,67 @@ async function openAndSend(data) {
 
 const pendingLoads = {}; // { tabId: { timer, startTime } }
 const waitingTime = 3;
+
+
+// 1. Навигация началась — запоминаем URL
 chrome.webNavigation.onBeforeNavigate.addListener((details) => {
     if (details.frameId !== 0) return;
 
-    const tabId = details.tabId;
-
-    // Сброс предыдущего таймера (на всякий случай)
-    if (pendingLoads[tabId]?.timer) {
-        clearTimeout(pendingLoads[tabId].timer);
-    }
-
-    const startTime = Date.now();
-
-    // Устанавливаем таймер
-    const timer = setTimeout(() => {
-        console.log(`Страница в табе ${tabId} грузится больше ${waitingTime} секунд — возможно, зависла.`);
-
-		chrome.tabs.get(tabId, (tab) => {
-			if (tab.url.indexOf("https://") < 0) {return;}
-			if (chrome.runtime.lastError) {
-				console.warn("Не удалось получить таб:", chrome.runtime.lastError.message);
-				return;
-			}
-
-			if (tab.url.indexOf('https') < 0) {console.log(tab.url + ' is not HTTPS!'); return;}
-			const url = getCleanDomain(tab.url);
-			if (url === null) {return;}
-			if (tab.url.indexOf('t.me/') >= 0) {url="t.me";}
-			
-			
-			console.log(`URL для таба ${tabId}: ${url} | ${tab.url}`);
-			
-			
-			
-			
-			fetcher('https://www.google.com/', 'GET', null).then(res => {
-				(async() => {
-					if (!await GetBool('StuckDetector')) {
-						return;
-					}
-					const WH = (await chrome.storage.local.get('WhiteListed')).WhiteListed;
-					if (WH && WH.indexOf(url) < 0) {
-						openAndSend({tabId: tabId, url: tab.url});
-					}
-				})();
-			}).catch(err => {
-				console.warn(err);
-				console.warn('failed to ping google.com');
-			})
-		});
-
-		
-		
-    }, waitingTime*1000);
-
-    pendingLoads[tabId] = { timer, startTime };
+    pendingLoads[details.tabId] = {
+        url: details.url,
+        timer: setTimeout(() => {
+            // страница не загрузилась
+            chrome.tabs.get(details.tabId, (tab) => {
+				
+                if (tab.url.indexOf('https') < 0) {console.log(tab.url + ' is not HTTPS!'); return;}
+				const url = getCleanDomain(tab.url);
+				if (url === null) {return;}
+				if (tab.url.indexOf('t.me/') >= 0) {url="t.me";}
+				
+				fetcher('https://www.google.com/', 'GET', null).then(res => {
+					(async() => {
+						if (!await GetBool('StuckDetector')) {
+							return;
+						}
+						const WH = (await chrome.storage.local.get('WhiteListed')).WhiteListed;
+						if (WH && WH.indexOf(url) < 0) {
+							openAndSend({tabId: details.tabId, url: tab.url});
+						}
+					})();
+				}).catch(err => {
+					console.warn(err);
+					console.warn('failed to ping google.com');
+				});
+				
+				
+            });
+            delete pendingLoads[details.tabId];
+        }, waitingTime*1000)
+    };
 });
 
-chrome.webNavigation.onCommitted.addListener((details) => {
+chrome.webNavigation.onCompleted.addListener((details) => {
     if (details.frameId !== 0) return;
-
-    const tabId = details.tabId;
-    if (pendingLoads[tabId]) {
-        clearTimeout(pendingLoads[tabId].timer);
-        delete pendingLoads[tabId];
-        console.log(`Страница в табе ${tabId} начала загружаться успешно (committed).`);
+    if (pendingLoads[details.tabId]) {
+        clearTimeout(pendingLoads[details.tabId].timer);
+        delete pendingLoads[details.tabId];
     }
 });
+
+// 3. Ошибка загрузки — берём tab сразу
+chrome.webNavigation.onErrorOccurred.addListener((details) => {
+    if (details.frameId !== 0) return;
+    if (pendingLoads[details.tabId]) {
+        clearTimeout(pendingLoads[details.tabId].timer);
+        delete pendingLoads[details.tabId];
+    }
+});
+
+
+
+
+
+
 
 function getCleanDomain(url) {
   try {
