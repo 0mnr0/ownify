@@ -305,6 +305,7 @@ chrome.runtime.onSuspend.addListener(async() => {
 
 chrome.tabs.onActivated.addListener((activeInfo) => {
   chrome.tabs.get(activeInfo.tabId, (tab) => {
+	    if (tab.url.indexOf('https://') < 0) {return}
 		lastUrl = tab.url;
   });
 });
