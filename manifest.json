@@ -3,7 +3,7 @@
   "minimum_chrome_version": "116",
   "description": "Use your Own Proxy for internet access",
   "name": "Ownify",
-  "version": "1.0.0.1",
+  "version": "0.7",
   "permissions": [
     "privacy",
     "proxy",
