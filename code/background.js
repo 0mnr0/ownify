@@ -407,6 +407,14 @@ chrome.webNavigation.onBeforeNavigate.addListener((details) => {
     };
 });
 
+chrome.webNavigation.onDOMContentLoaded.addListener((details) => {
+    if (details.frameId !== 0) return;
+    if (pendingLoads[details.tabId]) {
+        clearTimeout(pendingLoads[details.tabId].timer);
+        delete pendingLoads[details.tabId];
+    }
+});
+
 chrome.webNavigation.onCompleted.addListener((details) => {
     if (details.frameId !== 0) return;
     if (pendingLoads[details.tabId]) {
