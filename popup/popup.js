@@ -256,8 +256,10 @@ WhiteListEditor.addEventListener('click', async () => {
 
 function CloseLastSearchDialog() {
 	let TheLastDialog = LastDialog; LastDialog = null;
-	TheLastDialog.opacity = 0; TheLastDialog.backdropFilter = '';
-	runLater(() => {TheLastDialog.remove()}, 300);
+	if (TheLastDialog) {
+		TheLastDialog.opacity = 0; TheLastDialog.backdropFilter = '';
+		runLater(() => {TheLastDialog.remove()}, 300);
+	}
 }
 
 
