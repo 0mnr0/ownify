@@ -397,6 +397,8 @@ SettingsIcon.onclick = async () => {
 				SettingElement.addEventListener('click', async() => {
 					if (SettingElement.id==='authByte') {
 						StartAuth(true);
+						AnimateBlock(false);
+						AnimateVPNButton(false, true);
 					}
 					
 					if (SettingElement.id==='reloadWhiteList') {
