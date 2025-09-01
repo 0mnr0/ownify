@@ -4,6 +4,7 @@ let __LaunchNeededProxy__;
 let WhiteList = [];
 let ExtensionList = [];
 let conflictList = [];
+let NoTriggerList = [];
 
 (async () => {
 let lastUrl = '';
@@ -24,6 +25,7 @@ async function SettingsLoader(){
 	PROXY_CONFIG = (await chrome.storage.local.get('ServerData')).ServerData;
 	WhiteList = (await chrome.storage.local.get('WhiteListed')).WhiteListed; if (WhiteList === undefined) {WhiteList = [];}
 	HideUserAgent = await GetSettingBool('CHROMOMIZE');
+	NoTriggerList = (await chrome.storage.local.get('NoTriggerList')).NoTriggerList; if (typeof NoTriggerList !== 'object') {NoTriggerList = []}
 }
 __SettingsLoader__ = async () => { await SettingsLoader() };
 await SettingsLoader();
@@ -144,6 +146,12 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 		(async() => { 
 			await SettingsLoader();
 			RethinkInAppRules();
+		})()
+	}
+	
+	if (msg.action === "byPassTriggerListUpdate") {
+		(async() => { 
+			NoTriggerList = (await chrome.storage.local.get('NoTriggerList')).NoTriggerList; if (typeof NoTriggerList !== 'object') {NoTriggerList = []}
 		})()
 	}
 	
@@ -366,39 +374,40 @@ async function openAndSend(data) {
 
 
 
-const pendingLoads = {}; // { tabId: { timer, startTime } }
+const pendingLoads = {};
 const waitingTime = 3;
 
-
-// 1. Навигация началась — запоминаем URL
 chrome.webNavigation.onBeforeNavigate.addListener((details) => {
     if (details.frameId !== 0) return;
 
     pendingLoads[details.tabId] = {
         url: details.url,
         timer: setTimeout(() => {
-            // страница не загрузилась
             chrome.tabs.get(details.tabId, (tab) => {
-				
-                if (tab.url.indexOf('https') < 0) {console.log(tab.url + ' is not HTTPS!'); return;}
 				const url = getCleanDomain(tab.url);
-				if (url === null) {return;}
-				if (tab.url.indexOf('t.me/') >= 0) {url="t.me";}
 				
-				fetcher('https://www.google.com/', 'GET', null).then(res => {
-					(async() => {
-						if (!await GetBool('StuckDetector')) {
-							return;
-						}
-						const WH = (await chrome.storage.local.get('WhiteListed')).WhiteListed;
-						if (WH && WH.indexOf(url) < 0) {
-							openAndSend({tabId: details.tabId, url: tab.url});
-						}
-					})();
-				}).catch(err => {
-					console.warn(err);
-					console.warn('failed to ping google.com');
-				});
+				console.log(NoTriggerList, `NoTriggerList.indexOf("${url}") === -1`, NoTriggerList.indexOf(url) === -1);
+				if (NoTriggerList.indexOf(url) === -1) {
+					console.log('Site is NOT in "NoTriggerList"');
+					if (tab.url.indexOf('https') < 0) {console.log(tab.url + ' is not HTTPS!'); return;}
+					if (url === null) {return;}
+					if (tab.url.indexOf('t.me/') >= 0) {url="t.me";}
+					
+					fetcher('https://www.google.com/', 'GET', null).then(res => {
+						(async() => {
+							if (!await GetBool('StuckDetector')) {
+								return;
+							}
+							const WH = (await chrome.storage.local.get('WhiteListed')).WhiteListed;
+							if (WH && WH.indexOf(url) < 0) {
+								openAndSend({tabId: details.tabId, url: tab.url});
+							}
+						})();
+					}).catch(err => {
+						console.warn(err);
+						console.warn('failed to ping google.com');
+					});
+				}
 				
 				
             });

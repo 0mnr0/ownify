@@ -691,7 +691,7 @@ async function LaunchStuckMessage (data) {
 	userStuckScreen.find('span').textContent = `Не загружается. Добавить в белый список и открыть заново?`;
 	userStuckScreen.find('button#declineWhiteList').onEvent('click', () => {
 		window.close();
-	})
+	});
 	userStuckScreen.find('button#acceptWhiteList').onEvent('click', async () => {
 		let NewList = (await chrome.storage.local.get('WhiteListed')).WhiteListed;
 		if (typeof NewList !== 'object') {NewList = []}
@@ -700,7 +700,15 @@ async function LaunchStuckMessage (data) {
 		await chrome.storage.local.set({ WhiteListed: NewList });
 		chrome.runtime.sendMessage({action: "reloadSite", tabId: data.tabId, url: data.url});
 		window.close();
-	})
+	});
+	userStuckScreen.find('button#ignoreThisSite').onEvent('click', async () => {
+		let NewList = (await chrome.storage.local.get('NoTriggerList')).NoTriggerList;
+		if (typeof NewList !== 'object') {NewList = []}
+		NewList.push(getCleanDomain(data.url));
+		await chrome.storage.local.set({ NoTriggerList: NewList });
+		chrome.runtime.sendMessage({action: "byPassTriggerListUpdate"});
+		window.close();
+	});
 }
 
 
