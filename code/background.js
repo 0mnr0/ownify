@@ -1,12 +1,3 @@
-let __SettingsLoader__;
-let __disableProxy__;
-let __LaunchNeededProxy__;
-let WhiteList = [];
-let ExtensionList = [];
-let conflictList = [];
-let NoTriggerList = [];
-
-(async () => {
 let lastUrl = '';
 let isFilteredProxy;
 let isProxyActive;
@@ -18,41 +9,26 @@ let PROXY_CONFIG = {
     password: ""
 };
 let HideUserAgent = false;
+let WhiteList = [];
+let ExtensionList = [];
+let conflictList = [];
+let NoTriggerList = [];
 
-async function SettingsLoader(){
-	isFilteredProxy = (await chrome.storage.local.get('type')).type; if (isFilteredProxy) {isFilteredProxy = (isFilteredProxy==="whitelist")} else {isFilteredProxy = false;}
-	isProxyActive = await chrome.storage.local.get('enabled').enabled;
-	PROXY_CONFIG = (await chrome.storage.local.get('ServerData')).ServerData;
-	WhiteList = (await chrome.storage.local.get('WhiteListed')).WhiteListed; if (WhiteList === undefined) {WhiteList = [];}
-	HideUserAgent = await GetSettingBool('CHROMOMIZE');
-	NoTriggerList = (await chrome.storage.local.get('NoTriggerList')).NoTriggerList; if (typeof NoTriggerList !== 'object') {NoTriggerList = []}
-}
-__SettingsLoader__ = async () => { await SettingsLoader() };
-await SettingsLoader();
-
-
-
-
-
-function Generator() {
-	return WhiteList.map(domain => `dnsDomainIs(host, "${domain}") || shExpMatch(host, "*.${domain}")`).join(" || ");
+// Объявляем функции заранее
+async function SettingsLoader() {
+    isFilteredProxy = (await chrome.storage.local.get('type')).type;
+    isFilteredProxy = isFilteredProxy ? isFilteredProxy === "whitelist" : false;
+    isProxyActive = (await chrome.storage.local.get('enabled')).enabled;
+    PROXY_CONFIG = (await chrome.storage.local.get('ServerData')).ServerData || PROXY_CONFIG;
+    WhiteList = (await chrome.storage.local.get('WhiteListed')).WhiteListed || [];
+    HideUserAgent = await GetSettingBool('CHROMOMIZE');
+    NoTriggerList = (await chrome.storage.local.get('NoTriggerList')).NoTriggerList || [];
 }
 
-
-chrome.webRequest.onAuthRequired.addListener(
-    (details, callbackFn) => {
-        return {
-            authCredentials: {
-                username: PROXY_CONFIG.username,
-                password: PROXY_CONFIG.password
-            }
-        };
-    },
-    { urls: ["<all_urls>"] },
-    ["blocking"]
-);
-
-
+async function GetSettingBool(name) {
+    const ret = (await chrome.storage.local.get(`SETTING:${name}`))[`SETTING:${name}`];
+    return ret === true;
+}
 
 async function enableProxy() {
     await chrome.proxy.settings.set({
@@ -71,144 +47,129 @@ async function enableProxy() {
     isProxyActive = true;
 }
 
-
-
 async function enableFilteredProxy() {
+    const pacScript = `
+        function FindProxyForURL(url, host) {
+            if (${WhiteList.map(domain => 
+                `dnsDomainIs(host, "${domain}") || shExpMatch(host, "*.${domain}")`
+            ).join(" || ")}) {
+                return "PROXY ${PROXY_CONFIG.host}:${PROXY_CONFIG.port}";
+            }
+            return "DIRECT";
+        }
+    `;
+
     await chrome.proxy.settings.set({
         value: {
             mode: "pac_script",
-            pacScript: {
-                data: `
-                    function FindProxyForURL(url, host) {
-                        if (${Generator()}) {
-                            return "PROXY ${PROXY_CONFIG.host}:${PROXY_CONFIG.port}";
-                        }
-                        return "DIRECT";
-                    }
-                `
-            }
+            pacScript: { data: pacScript }
         },
         scope: "regular"
     });
     isProxyActive = true;
 }
 
-
-// Выключение
 async function disableProxy() {
-	chrome.action.setBadgeText({ text: 'OFF' });
-	chrome.action.setTitle({ title: '' });
+    chrome.action.setBadgeText({ text: 'OFF' });
+    chrome.action.setTitle({ title: '' });
     await chrome.proxy.settings.set({
         value: { mode: "system" },
         scope: "regular"
     });
     isProxyActive = false;
 }
-__disableProxy__ = async() => { await disableProxy() };
 
-async function GetSettingBool(name) {
-	name = "SETTING:"+name;
-	let ret = (await chrome.storage.local.get(name))[name]
-	return ret === true;
+async function LaunchNeededProxy() {
+    chrome.action.setBadgeText({ text: isFilteredProxy ? 'WH' : 'ON' });
+    chrome.action.setTitle({ title: isFilteredProxy ? 'Режим "WhiteList"' : 'Режим "ON"' });
+    chrome.action.setBadgeBackgroundColor({ color: '#00000000' });
+    
+    if (isFilteredProxy) {
+        await enableFilteredProxy();
+    } else { 
+        await enableProxy();
+    }
 }
 
+// Инициализация при загрузке
+chrome.runtime.onStartup.addListener(initialize);
+chrome.runtime.onInstalled.addListener(initialize);
+
+async function initialize() {
+    await SettingsLoader();
+    // Дополнительная инициализация при необходимости
+}
+
+// Обработчики событий
+chrome.webRequest.onAuthRequired.addListener(
+    (details, callbackFn) => ({
+        authCredentials: {
+            username: PROXY_CONFIG.username,
+            password: PROXY_CONFIG.password
+        }
+    }),
+    { urls: ["<all_urls>"] },
+    ["blocking"]
+);
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-	console.log('inMessage:',msg);
-    if (msg.action === "toggleProxy") {
-		(async() => {
-			await msg.enabled ? LaunchNeededProxy() : disableProxy();
-			sendResponse({enabled: msg.enabled});
-		})();
-        return true;
+    switch (msg.action) {
+        case "toggleProxy":
+            msg.enabled ? LaunchNeededProxy() : disableProxy();
+            sendResponse({ enabled: msg.enabled });
+            break;
+        case "reloadSettings":
+            SettingsLoader();
+            break;
+        case "requestConflicts":
+            GetExtensions();
+            break;
+        case "removeConflicts":
+            RemoveConflicts().then(() => {
+                GetExtensions();
+                sendResponse({ value: 'ok' });
+            });
+            return true;
+        case "reloadInAppSettings":
+            SettingsLoader().then(RethinkInAppRules);
+            break;
+        case "byPassTriggerListUpdate":
+            chrome.storage.local.get('NoTriggerList').then(data => {
+                NoTriggerList = data.NoTriggerList || [];
+            });
+            break;
+        case "reloadSettings:withVpnReload":
+            SettingsLoader().then(() => {
+                disableProxy().then(LaunchNeededProxy);
+                sendResponse({ status: 'ok' });
+            });
+            return true;
+        case "switchConnections":
+            SettingsLoader().then(() => {
+                disableProxy().then(LaunchNeededProxy);
+            });
+            break;
+        case "getUrl":
+            chrome.runtime.sendMessage({ getUrl: lastUrl });
+            break;
+        case "reloadSite":
+            SettingsLoader().then(async () => {
+                if (await GetBool('enabled')) {
+                    await disableProxy();
+                    await LaunchNeededProxy();
+                    chrome.tabs.reload(msg.tabId, { bypassCache: true });
+                }
+            });
+            break;
     }
-	
-	if (msg.action === "reloadSettings") {
-		(async() => { await SettingsLoader(); })()
-	}
-	
-	if (msg.action === "requestConflicts") {
-		(async() => {
-			GetExtensions();
-		})();
-	}
-	
-	if (msg.action === "removeConflicts") {
-		(async() => { 
-			RemoveConflicts();
-			GetExtensions();
-			sendResponse({value: 'ok'})
-		})();
-		
-	}
-	
-	if (msg.action === "reloadInAppSettings") {
-		(async() => { 
-			await SettingsLoader();
-			RethinkInAppRules();
-		})()
-	}
-	
-	if (msg.action === "byPassTriggerListUpdate") {
-		(async() => { 
-			NoTriggerList = (await chrome.storage.local.get('NoTriggerList')).NoTriggerList; if (typeof NoTriggerList !== 'object') {NoTriggerList = []}
-		})()
-	}
-	
-	if (msg.action === "reloadSettings:withVpnReload") {
-		(async() => {
-			await SettingsLoader();
-			disableProxy();
-			await LaunchNeededProxy();
-			sendResponse({'status': 'ok'})
-		})()
-	}
-	if (msg.action === "switchConnections") {
-		(async() => {
-			await SettingsLoader();
-			disableProxy();
-			await LaunchNeededProxy();
-		})()
-	}
-	if (msg.action === "getUrl") {
-		chrome.runtime.sendMessage({ 'getUrl': lastUrl });
-		return false;
-	}
-	if (msg.action === "reloadSite") {
-		(async () => {
-			await __SettingsLoader__();
-			if (await GetBool('enabled')) {
-				await __disableProxy__();
-				await __LaunchNeededProxy__();
-				chrome.tabs.reload(msg.tabId, { bypassCache: true }, () => {
-					if (chrome.runtime.lastError) {
-						console.error("Не удалось перезагрузить вкладку:", chrome.runtime.lastError.message);
-					} else {
-						console.log(`Вкладка ${msg.tabId} (${msg.url}) была перезагружена.`);
-					}
-				});
-			}
-		})();
-		
-		return false;
-	}
-	return true;
-
 });
 
+// Остальные функции (fetcher, openAndSend, getCleanDomain и т.д.) 
+// остаются без изменений, но убедитесь, что они объявлены на верхнем уровне
 
 
-async function LaunchNeededProxy(){
-	chrome.action.setBadgeText({ text: isFilteredProxy ? 'WH' : 'ON' });
-	chrome.action.setTitle({ title: isFilteredProxy ? 'Режим "WhiteList"' : 'Режим "ON"' });
-	chrome.action.setBadgeBackgroundColor({ color: '#00000000' });
-	if (isFilteredProxy) {
-		await enableFilteredProxy()
-	} else { 
-		await enableProxy()
-	}
-}
-__LaunchNeededProxy__ = async() => { await LaunchNeededProxy(); }
+
+
 
 async function RethinkInAppRules(){
 	chrome.privacy.network.webRTCIPHandlingPolicy.set({
@@ -329,7 +290,6 @@ chrome.webRequest.onBeforeRequest.addListener(
   { urls: ["<all_urls>"] }
 );
 
-})();
 
 
 
