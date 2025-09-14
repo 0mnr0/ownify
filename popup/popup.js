@@ -405,6 +405,12 @@ SettingsIcon.onclick = async () => {
 						LaunchHostsUpdate();
 						SettingsIcon.click();
 					}
+					
+					if (SettingElement.id==='resetIgnoreList') {
+						SettingsIcon.click();
+						await chrome.storage.local.set({ NoTriggerList: [] }); 
+						Toast.create('Список игнорируемых сайтов сброшен!', 3000, 'OK');
+					}
 				});
 				if (SettingElement.id==='reloadWhiteList') { UpdateWhiteListButton = SettingElement; }
 			}
@@ -450,6 +456,11 @@ async function GetActualSetting() {
 				<span onclick="document.getElementById('WhiteList:FromGitHub').click()"> Stuck Detector </span>
 			</div>
 			<span class="desc"> Если сайт не загружается - будет предложено добавить сайт в WhiteList. (Только HTTPS сайты) </span>
+			${
+				(typeof await GetString('NoTriggerList') === 'object' && (await GetString('NoTriggerList')).length > 0) ?
+				'<button id="resetIgnoreList" style="font-size: smaller; margin-top: 4px"> Сбросить список игнорируемых сайтов </button>' :
+				''
+			}
 		</div>
 		
 		<div class="setting DoubleAction top" >
