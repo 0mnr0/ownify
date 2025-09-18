@@ -1,4 +1,13 @@
 <img src="https://github.com/0mnr0/ownify/blob/main/files/readme_title.png?raw=true">
+<div align="center">
+  <p align="center">
+  <a href="https://chromewebstore.google.com/detail/ownify/aiipddepmffihjeoaailegfackjihajd">
+    <img src="https://github.com/0mnr0/ownify/blob/main/gitFiles/GetFromPlayStore.png?raw=true" width="400">
+  </a>
+</p>
+
+</div>
+<br>
 
 # Ownify 
 
@@ -13,10 +22,6 @@
   <h2> Откуда установить Ownify? </h2><br>
   Пока что расширение недоступно в Chrome WebStore, так как до конца августа оно будет тестироваться. Пока что можно только скачать исходники, разархивировать и "загрузить распакованное расширение" напрямую в браузер
   <br><br>
-  
-***************
-  <h2> Как подключиться к Ownify? </h2><br>
-  При открытии расширения вас попросят ввести конфигурацию. Вы можете получить её от человека или создать её самому если у вас есть proxy сервер <br><br>
   
 ***************
   <h2> Обзодит ли это расширение DPI фильтры ? </h2><br>
