@@ -20,7 +20,8 @@
 
 <details><summary>Работа с Ownify</summary>
   <h2> Откуда установить Ownify? </h2><br>
-  Пока что расширение недоступно в Chrome WebStore, так как до конца августа оно будет тестироваться. Пока что можно только скачать исходники, разархивировать и "загрузить распакованное расширение" напрямую в браузер
+  Установка Ownify доступна на Chromium браузеры. Если будет ажиотаж - сделаю версию для FireFox :).
+  https://chromewebstore.google.com/detail/ownify/aiipddepmffihjeoaailegfackjihajd
   <br><br>
   
 ***************
