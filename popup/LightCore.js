@@ -155,6 +155,21 @@ const RemoveStyle = (id) => {
 	};
 
 
+    HTMLElement.prototype.splitBySymbols = function ()  {
+        const text = this.textContent;
+        this.textContent = ""; // очищаем
+
+        let ElementsList = [];
+        text.split("").forEach(char => {
+            const charSpan = document.createElement("span");
+            charSpan.textContent = char;
+            this.appendChild(charSpan);
+            ElementsList.push(charSpan);
+        });
+        return ElementsList;
+    }
+
+
 
 	
 	HTMLElement.prototype.makeLater = async function(fun, time) {
@@ -316,7 +331,7 @@ const createElementWith = (elementType, elementProps) => {
 			return null;
 		}
 	})
-	
+
 	
 	
 	Object.defineProperty(HTMLElement.prototype, 'cornerRadius', {
@@ -325,6 +340,24 @@ const createElementWith = (elementType, elementProps) => {
 	  },
 	  set(value) {
 		this.borderRadius = value+'px';
+	  }
+	});
+
+	Object.defineProperty(HTMLElement.prototype, 'phantom', {
+	  set(value) {
+          requestAnimationFrame(() => {
+              if (value) {
+                  this.style.position = absolute;
+                  this.style.zIndex = -100;
+                  this.style.opacity = 0;
+                  this.style.transition = 'none';
+              } else {
+                  this.style.position = '';
+                  this.style.zIndex = '';
+                  this.style.opacity = '';
+                  this.style.transition = '';
+              }
+          });
 	  }
 	});
 	
@@ -337,6 +370,126 @@ const createElementWith = (elementType, elementProps) => {
 	Object.defineProperty(HTMLElement.prototype, 'realHeight', {
 	    get() { return this.scrollHeight; }
 	});
+
+
+
+    window.LocalStorage = {
+        isKeyExists(key) {
+            return Object.keys(localStorage).indexOf(key) > -1
+        },
+        save: function (key, value) {
+            localStorage[key] = value;
+            return value;
+        },
+        getInt: function (key) {
+            let val = localStorage.getItem(key);
+            if (val === null) {
+                return null
+            } // Because Number(null) is returning "0"
+            return Number(val);
+        },
+        getBool: function (key) {
+            let val = localStorage.getItem(key);
+            if (val === undefined || val === null) {
+                return val
+            } // Boolean() -> false
+            return val;
+        },
+        getString: function (key) {
+            return localStorage.getItem(key);
+        },
+        get: (key) => {return localStorage.getItem(key)},
+        getFloat: function (key) {
+            return parseFloat(localStorage.getItem(key))
+        },
+        remove: (key) => {
+            localStorage.removeItem(key);
+        },
+        removeKey: (key) => {
+            localStorage.removeItem(key)
+        }
+    };
 	
 	
+})();
+
+
+
+
+
+// ████████╗██████╗  █████╗ ███╗   ██╗███████╗██╗      █████╗ ████████╗███████╗     ████████╗ ██████╗  ██████╗ ██╗     ███████╗
+// ╚══██╔══╝██╔══██╗██╔══██╗████╗  ██║██╔════╝██║     ██╔══██╗╚══██╔══╝██╔════╝     ╚══██╔══╝██╔═══██╗██╔═══██╗██║     ██╔════╝
+//    ██║   ██████╔╝███████║██╔██╗ ██║███████╗██║     ███████║   ██║   █████╗          ██║   ██║   ██║██║   ██║██║     ███████╗
+//    ██║   ██╔══██╗██╔══██║██║╚██╗██║╚════██║██║     ██╔══██║   ██║   ██╔══╝          ██║   ██║   ██║██║   ██║██║     ╚════██║
+//    ██║   ██║  ██║██║  ██║██║ ╚████║███████║███████╗██║  ██║   ██║   ███████╗        ██║   ╚██████╔╝╚██████╔╝███████╗███████║
+//    ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝╚══════╝╚═╝  ╚═╝   ╚═╝   ╚══════╝        ╚═╝    ╚═════╝  ╚═════╝ ╚══════╝╚══════╝
+//                            
+
+
+(() => {
+	let defaultLocale = navigator.language;
+	let TrDict = {};
+	const TranslateAssistant = {
+		"init": function(baseLang, dict) {
+			if (typeof baseLang !== 'string') {
+				throw "You need to specify \"baseLang\" key (exmaple: 'en' | 'ru')"
+				return;
+			}
+			if (typeof dict !== 'object') {
+				runLater(() => {console.info("Exmaple:\n", {'en': {'hi': 'Hello!'}, 'ru': {'hi': 'Привет!'}})}, 1);
+				throw "You need to specify translate \"dictionary\"!\n"
+				return;
+			}
+			defaultLocale = baseLang;
+			TrDict = dict;
+			window.getString = TranslateAssistant.translate.get;
+		},
+		isFullyInitialited: () => {
+			return (typeof baseLang !== 'string' && typeof TrDict === 'object' && Object.keys(TrDict).length > 0)
+		},
+		defaultLocale: function(baseLang){
+			if (typeof baseLang === 'string') {
+				defaultLocale = baseLang;
+			}
+			return defaultLocale;
+		},
+		dict: function(dictionary) {
+			if (typeof dictionary === 'object') {
+				TrDict = dictionary;
+			}
+			return TrDict;
+		},
+		
+		translate: {
+			get: function(key) {
+				if (TrDict["NOT_TRANSLATEABLE"]?.[key] !== undefined) {
+					return TrDict["NOT_TRANSLATEABLE"][key]
+				}
+				return TrDict[defaultLocale]?.[key] || key
+			},
+			all: function() {
+				const elements = findAll('*[data-i18n]');
+				elements.forEach(el => {
+					const key = el.getAttribute("data-i18n");
+					const translation = TranslateAssistant.translate.get(key);
+
+					if (translation) {
+						const textNode = [...el.childNodes].find(
+							node => node.nodeType === Node.TEXT_NODE && node.nodeValue.trim() !== ""
+						);
+						if (textNode) {
+							textNode.nodeValue = translation;
+						} else {
+							el.insertBefore(document.createTextNode(translation), el.firstChild);
+						}
+					}
+				});
+			},
+			key: function(key) {
+				if (key === undefined) {return TrDict}
+				return TranslateAssistant.translate.get(key)
+			}
+		}
+	};
+	window.TranslateAssistant = TranslateAssistant;
 })();
