@@ -12,43 +12,43 @@
 # Ownify 
 
 
-<h3> Что это такое? </h2>
-<h4> Ownify - настраиваемое Proxy соединение (тестировался только HTTP). На момент выпуска расширения уже имеет функционал белого списка сайтов, скрытия утечки WebRTC, подмены Chrome User-Agent и авто-обновление белого списка</h4>
+<h3> What is it? </h2>
+<h4> Ownify is a configurable Proxy connection (only HTTP was tested). At the time of the extension's release, it already has the functionality of whitelisting sites, hiding WebRTC leaks, spoofing Chrome User-Agent, and auto-updating the whitelist.</h4>
 <br><br>
 
 ***************
 
-<details><summary>Работа с Ownify</summary>
-  <h2> Откуда установить Ownify? </h2><br>
-  Установка Ownify доступна на Chromium браузеры. Если будет ажиотаж - сделаю версию для FireFox :).
+<details><summary>Working with Ownify</summary>
+  <h2> Where do I install Ownify from? </h2><br>
+  The installation of Ownify is available on Chromium browsers. If there is a stir, I will make a version for FireFox :).
   https://chromewebstore.google.com/detail/ownify/aiipddepmffihjeoaailegfackjihajd
   <br><br>
   
 ***************
-  <h2> Обзодит ли это расширение DPI фильтры ? </h2><br>
-  Лично у меня - обходит. Но этом ожет зависеть от вашего провайдера, расположения сервера и других тысяч критериев <br><br>
+  <h2> Does this extension bypass DPI filters? </h2><br>
+  Personally, I'm getting around it. But it may depend on your provider and a bunch of other criteria <br><br>
   
 ***************
-  <h2> Не работает соединение (не проходит траффик / ошибка прокси) </h2><br>
-  Попробуйте протестировать curl с нужными параметрами. Если всё ещё не работает - напишите мне в Telegram: t.me/dsvl0 <br><br>
+  <h2> The connection is not working (traffic is not getting through / proxy error) </h2><br>
+  Try to test curl with the required parameters. If everything is still not working, write to me in Telegram: t.me/dsvl0 <br><br>
 </details>
 
 
-<h2> Как создать конфиг Ownify? </h2><br>
-<span>Ownify использует следующий синтаксис на вход:</span> 
+<h2> How do I create the Ownify config? </h2><br>
+<span>Ownify uses the following syntax for input:</span> 
 
 ```json
 {"host": "xx.xx.xx.xxx", "scheme": "http", "PCP": 443, "PCN": "QspyzVtfsobnf", "PCA": "ZpvsQbttxpse"}
 ```
 
 ГДЕ:
-  - host -> IP Сервера
-  - scheme -> HTTP (Возможно и SOCKS5, я не тестировал)
+  - host -> IP Address
+  - scheme -> HTTP (Possibly SOCKS5, I haven't tested it)
   - PCP -> Proxy Connection Port
   - PCN -> Proxy Connection Username (If needed) (! ROT1 Encoded !)
   - PCA -> Proxy Connection Passwrod (If needed) (! ROT1 Encoded !)
   
-Функция кодирования в ROT1:
+The encoding function in ROT1 (JavaScript):
 ```js
 function rot1Encode(str) {
   return [...str].map(c =>
