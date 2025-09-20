@@ -8,6 +8,7 @@ let isSettingsOpened = false;
 let CurrentTabUrl = '';
 const SUBTITLE_TEXT = 'PROXIFY URSELF! - by ';
 let isProgressBarWorking = false;
+const UserLaungage = true ? navigator.language : 'en';
 
 const MainWindow = find('div.flex.vertical.centered');
 let proxyConnection = find('div.proxyConnection');
@@ -86,7 +87,7 @@ toggleButton.addEventListener('click', async () => {
 	await chrome.storage.local.set({ enabled: newState });
 	await chrome.runtime.sendMessage({ action: "toggleProxy", enabled: newState });
 	  
-	toggleButton.textContent = newState ? 'Отключить VPN' : 'Запустить VPN';
+	toggleButton.textContent = newState ? getString('DisableVPN') : getString('EnableVPN');
 	AnimateBlock(newState);
 	AnimateVPNButton(newState, true);
 	lastVpnState = newState;
@@ -295,7 +296,7 @@ EditorTextField.onEvent('input', async () => {
 	}
 	
 	LastDialog = document.createElement('div');
-	LastDialog.title = 'Поиск в белом списке';
+	LastDialog.title = getString('SearchInWhiteList');
 	LastDialog.className = 'FilteredDIV';
 	LastDialog.innerHTML = InnerContent;
 	body.appendChild(LastDialog);
@@ -409,7 +410,7 @@ SettingsIcon.onclick = async () => {
 					if (SettingElement.id==='resetIgnoreList') {
 						SettingsIcon.click();
 						await chrome.storage.local.set({ NoTriggerList: [] }); 
-						Toast.create('Список игнорируемых сайтов сброшен!', 3000, 'OK');
+						Toast.create(getString('ListIgnoringSitesReseted'), 3000, 'OK');
 					}
 				});
 				if (SettingElement.id==='reloadWhiteList') { UpdateWhiteListButton = SettingElement; }
@@ -433,7 +434,7 @@ async function GetActualSetting() {
 				</label>
 				<span onclick="document.getElementById('SETTING:CHROMOMIZE').click()"> Chrome User-Agent </span>
 			</div>
-			<span class="desc"> Подмена браузера на самый популярный. Уменьшает шансы на капчу </span>
+			<span class="desc"> ${getString('UserAgentDescription')} </span>
 		</div>
 		
 		<div class="setting">
@@ -442,9 +443,9 @@ async function GetActualSetting() {
 					<input type="checkbox" class="settingAction" id="SETTING:FixWEBRTC" ${await GetSettingBool('FixWEBRTC') ? 'checked' : ''}>
 					<span class="slider round"></span>
 				</label>
-				<span onclick="document.getElementById('SETTING:FixWEBRTC').click()"> Отключить WebRTC </span>
+				<span onclick="document.getElementById('SETTING:FixWEBRTC').click()"> ${ getString('WebRTC_Setting') } </span>
 			</div>
-			<span class="desc"> Исправляет "Утечку" реального IP адреса, но соединение становится медленее </span>
+			<span class="desc"> ${getString('WebRTC_Description')} </span>
 		</div>
 		
 		<div class="setting">
@@ -453,12 +454,12 @@ async function GetActualSetting() {
 					<input type="checkbox" class="settingAction" id="StuckDetector" ${await GetBool('StuckDetector') ? 'checked' : ''}>
 					<span class="slider round"></span>
 				</label>
-				<span onclick="document.getElementById('WhiteList:FromGitHub').click()"> Stuck Detector </span>
+				<span onclick="document.getElementById('WhiteList:FromGitHub').click()"> ${getString('StuckDetectorSlider')} </span>
 			</div>
-			<span class="desc"> Если сайт не загружается - будет предложено добавить сайт в WhiteList. (Только HTTPS сайты) </span>
+			<span class="desc"> ${getString('StuckDetector')} </span>
 			${
 				(typeof await GetString('NoTriggerList') === 'object' && (await GetString('NoTriggerList')).length > 0) ?
-				'<button id="resetIgnoreList" style="font-size: smaller; margin-top: 4px"> Сбросить список игнорируемых сайтов </button>' :
+				`<button id="resetIgnoreList" style="font-size: smaller; margin-top: 4px"> ${getString('ResetIgnoringSites')} </button>` :
 				''
 			}
 		</div>
@@ -469,31 +470,31 @@ async function GetActualSetting() {
 					<input type="checkbox" class="settingAction" id="WhiteList:FromGitHub" ${await GetBool('WhiteList:FromGitHub') ? 'checked' : ''}>
 					<span class="slider round"></span>
 				</label>
-				<span onclick="document.getElementById('WhiteList:FromGitHub').click()"> Обновляемый WhiteList </span>
+				<span onclick="document.getElementById('WhiteList:FromGitHub').click()"> ${getString('UpdatableWhiteList')} </span>
 			</div>
-			<span class="desc"> Постоянно дополнять список WhiteList на основе <a href="https://github.com/0mnr0/ownify" target="_blank"> репозитория</a>. Не заменяет вручную добавленные сайты </span>
+			<span class="desc"> ${getString('UpdatableWhiteListDescription')} </span>
 		</div>
 		
 		<div class="setting DoubleAction end">
-			<button id="reloadWhiteList" ${isProgressBarWorking ? 'disabled' : ''}> Обновить список сейчас </button>
+			<button id="reloadWhiteList" ${isProgressBarWorking ? 'disabled' : ''}> ${getString('UpdateGITListNow')} </button>
 		</div>
 		
 		<div class="setting">
-			<button id="authByte"> Изменить конфигурацию </button>
+			<button id="authByte"> ${getString('ChangeConfiguration')} </button>
 		</div>
 		
 		<span class="split2"></span>
 		
 		<div class="setting fact">
-			<h1> Интересный факт: </h1>
-			<span class="desc fact"> Каждый значок появляюшийся на экране, означает что какой-то сайт выполнил запрос: </span>
+			<h1> ${getString('InterstingFact')}: </h1>
+			<span class="desc fact"> ${getString('WhatAboutFact')} </span>
 			<div class="flex" style="align-items: center">
 				<img src="${proxyfied.src}">
-				<span> - С использованием VPN</span>
+				<span> - ${getString('RequestWithVpn')}</span>
 			</div>
 			<div class="flex" style="align-items: center">
 				<img src="${userfied.src}">
-				<span> - Без VPN </span>
+				<span> - ${getString('RequestWithoutVPN')} </span>
 			</div>
 		</div>
 		
@@ -648,7 +649,7 @@ chrome.runtime.onMessage.addListener((message, sender) => {
 DisableOthersScreen.querySelector('button').addEventListener('click', async() => {
 	ConflictScreenVisibility(false);
 	await chrome.runtime.sendMessage({action: 'removeConflicts'}).then(res => {
-		Toast.create('Отключено всё!', 1200)
+		Toast.create(getString('disabledAll'), 1200)
 	});
 });
 
@@ -673,8 +674,10 @@ function GetSiteIcon(domain) {
 }
 
 
-function setActiveConnectionType(conType) {
-	proxyMode.textContent = `Режим "${capitalizeFirstLetter(conType)}"`
+async function setActiveConnectionType(conType) {
+	while (typeof getString === 'undefined') { await sleep(50); }
+	console.log(conType);
+	proxyMode.textContent = `${getString('Mode')}: "${getString(conType)}"`
 	connectionType = conType;
 	ConnectionTypes.forEach(connection => {
 		(connection.getAttribute('value').toLowerCase() === conType) ? connection.classList.add('active') : connection.classList.remove('active');
@@ -697,9 +700,9 @@ async function LaunchStuckMessage (data) {
 			body.height = userStuckScreen.realHeight+'px';
 		}, 'height');
 	}, 50);
-	console.log(data);
+	while (typeof getString === 'undefined') { await sleep(50); }
 	userStuckScreen.find('h3').textContent = getCleanDomain(data.url);
-	userStuckScreen.find('span').textContent = `Не загружается. Добавить в белый список и открыть заново?`;
+	userStuckScreen.find('span').textContent = getString('stuckMessage');
 	userStuckScreen.find('button#declineWhiteList').onEvent('click', () => {
 		window.close();
 	});
@@ -748,7 +751,7 @@ async function LaunchHostsUpdate() {
 				ProgressBarVisibility(false);
 				endProgressAnimation();
 				RemoveStyle('WorkingProgress');
-				Toast.create('Список обновлён!', 1000, 'OK')
+				Toast.create(getString('ListWasUpdated'), 1000, 'OK')
 			}, 200)
 		})
 	}, 150);
@@ -811,7 +814,7 @@ function StartAuth(cancelable) {
 				chrome.runtime.sendMessage({ action: "reloadSettings" });
 				window.location.reload();
 			} catch(e) {
-				alert("Неверный синтаксис "+(notFoundInfo));
+				alert(getString('IncorrectSyntax')+' '+(notFoundInfo));
 			}
 			ContinueButton.disabled = false;
 		});
@@ -831,7 +834,6 @@ function StartAuth(cancelable) {
 		toggleButton.disabled = true;
 	}
 	
-	toggleButton.textContent =  isNowEnabled ? 'Отключить VPN' : 'Запустить VPN';
 	AnimateBlock(isNowEnabled);
 	AnimateVPNButton(isNowEnabled, false);
 
@@ -848,7 +850,9 @@ function StartAuth(cancelable) {
 	} else if (!await IsKeyExists('WhiteList:FromGitHub')) {
 		ShowGitHubHosts();
 	}
-
+	TranslateAssistant.init(UserLaungage, LANGS)
+	TranslateAssistant.translate.all();
+	toggleButton.textContent = isNowEnabled ? getString('DisableVPN') : getString('EnableVPN');
 })();
 
 async function IsKeyExists(keyName){

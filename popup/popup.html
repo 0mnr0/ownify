@@ -12,6 +12,7 @@
 	<link rel="stylesheet" href="switch.css"> </link>
 	
 	<script src="LightCore.js" defer></script>
+	<script src="LANGS.js" defer></script>
 	<script src="toast.js" defer></script>
 	<script src="popup.js" defer></script>
 </head>
@@ -25,56 +26,56 @@
 			<h1 class="title"> Ownify </h1>
 			<img alt="🎉" id="brth" src="birthday.png" style="display: none; height: 40px; margin-top: 16px; margin-left: 10px; scale: 1.1">
 		</div>
-		<p class="subtitle"> Proxify URSELF! - By dsvl0</p>
+		<p class="subtitle" data-i18n="ProxifyURSELF"> Proxify URSELF! - By dsvl0</p>
 		
 		<div class="proxyConnection">
 			<button id="toggle">Enable VPN</button>
 		</div>	
 		<div class="proxySelector flex">
-			<p id="proxyMode"> Режим "WhiteList" </p>
+			<p id="proxyMode" data-i18n="Mode-WhiteList"> Режим "WhiteList" </p>
 			<img class="arrow" src="arrow_down.svg"/>
 		</div>
 		<div class="WhiteListEditor flex">
-			<button class="LaaucnhListEditor"> Белый список </button>
+			<button class="LaaucnhListEditor" data-i18n="WhiteListEdit"> Белый список </button>
 			<img class="pen" src="pen.svg"/>
 		</div>
 
 		<div class="TypeSelector">
-			<span class="Title" value="WhiteList"> WhiteList 
-				<span class="description"> VPN для определённого списка сайтов </span>
+			<span class="Title" value="WhiteList" data-i18n="WhiteList"> WhiteList 
+				<span class="description" data-i18n="WhiteListDescription"> VPN для определённого списка сайтов </span>
 			</span>
 				
-			<span class="Title" value="ON"> ON 
-				<span class="description"> VPN для всех сайтов </span>
+			<span class="Title" value="ON" data-i18n="ON"> ON 
+				<span class="description" data-i18n="VPN4All"> VPN для всех сайтов </span>
 			</span>
 		</div>
 		
-		<img src="settings.svg" class="openSettings" title="Открыть настройки">
+		<img src="settings.svg" class="openSettings" title="Open Settings">
 		
 		<div class="ProgressBar flex">
 			<progress value="0" max="100" style="--p:0"></progress>
-			<span> Секунду... </span>
+			<span data-i18n="GiveMeASecond"> Секунду... </span>
 		</div>
 		
 	</div>
 	
 	<div class="AuthWindow">
-		<h1> Для продолжения введите код конфигурации: </h1>
+		<h1 data-i18n="InsertConfigurationCode"> Для продолжения введите код конфигурации: </h1>
 		<input type="text" placeholder="{ip: xxx, port: -1, username: dsvl0, password: xxx}"></text>
-		<button class="save"> Продолжить </button> 
-		<button class="cancelBtn"> Отмена </button> 
+		<button class="save" data-i18n="Continue"> Продолжить </button> 
+		<button class="cancelBtn" data-i18n="Cancel"> Отмена </button> 
 	</div>
 	
 	<div class="ListEditorScreen flex vertical">
 		<div class="topbar">
 			<div class="flex activity">
 				<img src="arrow_back.svg">
-				<span> Белый список </span>
+				<span data-i18n="WhiteListEdit"> Белый список </span>
 			</div>
 		</div>
 	
 		<div class="topActivity flex">
-			<input type="text" id="siteInserter" placeholder="Пример: chatgpt.com"></input>
+			<input type="text" id="siteInserter" placeholder="chatgpt.com"></input>
 			<button> + </button>
 		</div>
 		<span class="split"></span>
@@ -85,7 +86,7 @@
 	
 	<div class="settingsSection">
 		<div class="flex topPane">
-			<span> Настройки </span>
+			<span data-i18n="Settings"> Настройки </span>
 			<img src="arrow_back.svg">
 		</div>
 		<span class="split"></span>
@@ -102,31 +103,31 @@
 					<input type="checkbox" id="FirstOpenedSetting" checked>
 					<span class="slider round"></span>
 				</label>
-				<span onclick="document.getElementById('FirstOpenedSetting').click()"> Обновляемый WhiteList </span>
+				<span onclick="document.getElementById('FirstOpenedSetting').click()" data-i18n="UpdatableWhiteList"> Обновляемый WhiteList </span>
 			</div>
-			<span class="desc"> Постоянно дополнять список WhiteList на основе <a href="https://github.com/0mnr0/ownify" target="_blank"> репозитория</a>. Не заменяет вручную добавленные сайты </a> </span>
+			<span class="desc" data-i18n="UpdatableWhiteListDescription"> Постоянно дополнять список WhiteList на основе <a href="https://github.com/0mnr0/ownify" target="_blank"> репозитория</a>. Не заменяет вручную добавленные сайты </span>
 		</div>
-		<button class="AppendAndGo"> Продолжить </button>
+		<button class="AppendAndGo" data-i18n="Continue"> Продолжить </button>
 	</div>
 	
 	
 	<div class="DisableOthersScreen">
-		<h2> Отключите другие VPN :( </h2>
-		<span> Мы обнаружили что другие VPN - расширения препятсвуют работе Ownify. А именно:</span>
+		<h2 data-i18n="DisableOtherVPNTitle"> Отключите другие VPN :( </h2>
+		<span data-i18n="DisableOtherVPN"> Мы обнаружили что другие VPN - расширения препятсвуют работе Ownify. А именно:</span>
 		
 		<div class="extList"></div>
-		<button> Отключить </button>
+		<button data-i18n="Disable"> Отключить </button>
 	</div>
 	
 	
 	<div class="userStuckScreen">
-		<h3> Страница не загружается :( </h3>
+		<h3 data-i18n="PageIsNotLoading"> Страница не загружается :( </h3>
 		<span>  </span>
 	
 		<div class="flex">
-			<button id="acceptWhiteList"> Добавить и перезагрузить </button>
-			<button id="ignoreThisSite"> Не предлагать для этого сайта </button>
-			<button id="declineWhiteList"> Отмена </button>	
+			<button id="acceptWhiteList" data-i18n="AddAndReload"> Добавить и перезагрузить </button>
+			<button id="ignoreThisSite" data-i18n="ignoreThisSite"> Не предлагать для этого сайта </button>
+			<button id="declineWhiteList" data-i18n="Cancel"> Отмена </button>	
 		</div>
 	</div>
 
