@@ -425,6 +425,15 @@ SettingsIcon.onclick = async () => {
 }
 
 async function GetActualSetting() {
+	const AvaiableLangs = Object.keys(LANGS);
+	let DispalyingLangs = '';
+	for (let i = 0; i < AvaiableLangs.length; i++) {
+		if (LANGS[AvaiableLangs[i]].LaungageName !== undefined) {
+			DispalyingLangs = DispalyingLangs + `
+				<option value="${LANGS[AvaiableLangs[i]].LaungageName}"> <span class="option-label"> ${LANGS[AvaiableLangs[i]].LaungageName} </span> </option>
+			`
+		}
+	}
 	let txt = `
 		<div class="setting">
 			<div class="main flex">
@@ -484,6 +493,14 @@ async function GetActualSetting() {
 		</div>
 		
 		<span class="split2"></span>
+		
+		<div class="setting">
+			<h1> ${getString('SelectLaungage')} </h1>
+			<select name="LangSelect" id="LangSelect" class="select-css">
+			  <option value="">${getString('AutoDetect')}</option>
+			  ${DispalyingLangs}
+			</select>
+		</div>
 		
 		<div class="setting fact">
 			<h1> ${getString('InterstingFact')}: </h1>

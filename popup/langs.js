@@ -48,7 +48,9 @@ const LANGS = {
 		ListIgnoringSitesReseted: "Список игнорируемых сайтов сброшен!",
 		SearchInWhiteList: "Поиск в белом списке",
 		IncorrectSyntax: 'Неверный синтаксис',
-		ListWasUpdated: "Список обновлен!"
+		ListWasUpdated: "Список обновлен!",
+		AutoDetect: "Авто-обнаружение",
+		SelectLaungage: "Язык: "
 	},
 	"en": {
 		LaungageName: "English",
@@ -89,6 +91,8 @@ const LANGS = {
 		ListIgnoringSitesReseted: "The list of ignored sites has been reset!",
 		SearchInWhiteList: "Search in white list",
 		IncorrectSyntax: 'Incorrect Syntax',
-		ListWasUpdated: "Last was updated!"
+		ListWasUpdated: "Last was updated!",
+		AutoDetect: "Auto Detect",
+		SelectLaungage: "Laungage: "
 	}
 }
