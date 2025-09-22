@@ -1,4 +1,6 @@
 const LANGS = {
+	"en-US": "en",
+	"en-GB": "en",
 	"NOT_TRANSLATEABLE": {
 		ProxifyURSELF: "Proxify URSELF! - By ",
 		WhiteList: "WhiteList",

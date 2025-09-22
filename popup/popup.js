@@ -8,11 +8,11 @@ let isSettingsOpened = false;
 let CurrentTabUrl = '';
 const SUBTITLE_TEXT = 'PROXIFY URSELF! - by ';
 let isProgressBarWorking = false;
-const UserLaungage = true ? navigator.language : 'en';
+let UserLaungage = true ? navigator.language : 'en';
 
 const MainWindow = find('div.flex.vertical.centered');
 let proxyConnection = find('div.proxyConnection');
-let toggleButton = document.getElementById('toggle');
+let toggleButton = findById('toggle');
 let spanBackground = find('span.background');
 let proxySelector = find('div.proxySelector');
 let TypeSelector = find('div.TypeSelector');
@@ -415,6 +415,24 @@ SettingsIcon.onclick = async () => {
 				});
 				if (SettingElement.id==='reloadWhiteList') { UpdateWhiteListButton = SettingElement; }
 			}
+			if (setting.querySelector('select')) {
+				SettingElement = setting.querySelector('select');
+				SettingElement.addEventListener('change', async() => {
+					if (SettingElement.id==='LangSelect') {
+						const value = SettingElement.value.replaceAll(" ","");
+						if (value.length === 0) {
+							await chrome.storage.local.remove(['InterfaceLaungage']);
+							TranslateAssistant.init(UserLaungage, LANGS);
+						} else {
+							await chrome.storage.local.set({ 'InterfaceLaungage': value });
+							TranslateAssistant.init(value, LANGS);
+						}
+						toggleButton.textContent = lastVpnState ? getString('DisableVPN') : getString('EnableVPN');
+						TranslateAssistant.translate.all();
+						if (isSettingsOpened) { SettingsIcon.click() }
+					}
+				})
+			}
 			runLater(() => {
 				setting.right = '0px';
 				setting.opacity = 1;
@@ -425,12 +443,12 @@ SettingsIcon.onclick = async () => {
 }
 
 async function GetActualSetting() {
-	const AvaiableLangs = Object.keys(LANGS);
+	const AvaiableLangs = TranslateAssistant.getAvailableLanguages();
 	let DispalyingLangs = '';
 	for (let i = 0; i < AvaiableLangs.length; i++) {
 		if (LANGS[AvaiableLangs[i]].LaungageName !== undefined) {
 			DispalyingLangs = DispalyingLangs + `
-				<option value="${LANGS[AvaiableLangs[i]].LaungageName}"> <span class="option-label"> ${LANGS[AvaiableLangs[i]].LaungageName} </span> </option>
+				<option value="${AvaiableLangs[i]}" ${await Get('InterfaceLaungage') === AvaiableLangs[i] ? 'selected' : ''}> <span class="option-label"> ${LANGS[AvaiableLangs[i]].LaungageName} </span> </option>
 			`
 		}
 	}
@@ -503,7 +521,7 @@ async function GetActualSetting() {
 		</div>
 		
 		<div class="setting fact">
-			<h1> ${getString('InterstingFact')}: </h1>
+			<h1> ${getString('InterstingFact')} </h1>
 			<span class="desc fact"> ${getString('WhatAboutFact')} </span>
 			<div class="flex" style="align-items: center">
 				<img src="${proxyfied.src}">
@@ -562,7 +580,7 @@ async function GetString(name) {
 	let ret = (await chrome.storage.local.get(name))[name]
 	return ret;
 }
-
+Get = GetString;
 
 
 async function SubTitle_EasterEgg() {
@@ -867,9 +885,11 @@ function StartAuth(cancelable) {
 	} else if (!await IsKeyExists('WhiteList:FromGitHub')) {
 		ShowGitHubHosts();
 	}
-	TranslateAssistant.init(UserLaungage, LANGS)
+	TranslateAssistant.init((await Get('InterfaceLaungage') !== undefined ? await Get('InterfaceLaungage') : UserLaungage), LANGS);
+	if (!TranslateAssistant.isLangAvailable(navigator.language)) {UserLaungage = 'en';}
 	TranslateAssistant.translate.all();
 	toggleButton.textContent = isNowEnabled ? getString('DisableVPN') : getString('EnableVPN');
+
 })();
 
 async function IsKeyExists(keyName){
