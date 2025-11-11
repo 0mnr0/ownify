@@ -41,12 +41,12 @@
 {"host": "xx.xx.xx.xxx", "scheme": "http", "PCP": 443, "PCN": "QspyzVtfsobnf", "PCA": "ZpvsQbttxpse"}
 ```
 
-ГДЕ:
+Where:
   - host -> IP Address
   - scheme -> HTTP (Possibly SOCKS5, I haven't tested it)
   - PCP -> Proxy Connection Port
   - PCN -> Proxy Connection Username (If needed) (! ROT1 Encoded !)
-  - PCA -> Proxy Connection Passwrod (If needed) (! ROT1 Encoded !)
+  - PCA -> Proxy Connection Password (If needed) (! ROT1 Encoded !)
   
 The encoding function in ROT1 (JavaScript):
 ```js
