@@ -8,7 +8,7 @@ let isSettingsOpened = false;
 let CurrentTabUrl = '';
 const SUBTITLE_TEXT = 'PROXIFY URSELF! - by ';
 let isProgressBarWorking = false;
-let UserLaungage = true ? navigator.language : 'en';
+let UserLaungage = Object.keys(LANGS).includes(navigator.language) ? navigator.language : 'en';
 
 const MainWindow = find('div.flex.vertical.centered');
 let proxyConnection = find('div.proxyConnection');
