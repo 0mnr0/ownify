@@ -70,20 +70,29 @@ async function enableFilteredProxy() {
 }
 
 async function disableProxy() {
-    chrome.action.setBadgeText({ text: 'OFF' });
-    chrome.action.setTitle({ title: '' });
     await chrome.proxy.settings.set({
         value: { mode: "system" },
         scope: "regular"
     });
     isProxyActive = false;
+	UpdateBadge();
+}
+
+function UpdateBadge() {
+	if (isProxyActive) {
+		chrome.action.setBadgeText({ text: isFilteredProxy ? 'WH' : 'ON' });
+		chrome.action.setTitle({ title: isFilteredProxy ? 'Режим "WhiteList"' : 'Режим "ON"' });
+		chrome.action.setBadgeBackgroundColor({ color: '#00000000' });
+	} else {	
+		chrome.action.setBadgeText({ text: 'OFF' });
+		chrome.action.setTitle({ title: '' });
+	}
+	console.log("Badge update!");
 }
 
 async function LaunchNeededProxy() {
-    chrome.action.setBadgeText({ text: isFilteredProxy ? 'WH' : 'ON' });
-    chrome.action.setTitle({ title: isFilteredProxy ? 'Режим "WhiteList"' : 'Режим "ON"' });
-    chrome.action.setBadgeBackgroundColor({ color: '#00000000' });
-    
+    UpdateBadge();
+	
     if (isFilteredProxy) {
         await enableFilteredProxy();
     } else { 
@@ -97,6 +106,7 @@ chrome.runtime.onInstalled.addListener(initialize);
 
 async function initialize() {
     await SettingsLoader();
+	UpdateBadge();
     // Дополнительная инициализация при необходимости
 }
 
@@ -113,6 +123,7 @@ chrome.webRequest.onAuthRequired.addListener(
 );
 
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+	console.log("MSG:", msg.action);
     switch (msg.action) {
         case "toggleProxy":
             msg.enabled ? LaunchNeededProxy() : disableProxy();
@@ -140,13 +151,16 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             break;
         case "reloadSettings:withVpnReload":
             SettingsLoader().then(() => {
-                disableProxy().then(LaunchNeededProxy);
+                if (isProxyActive) { disableProxy().then(LaunchNeededProxy); }
                 sendResponse({ status: 'ok' });
             });
             return true;
         case "switchConnections":
             SettingsLoader().then(() => {
-                disableProxy().then(LaunchNeededProxy);
+				
+				if (isProxyActive) { 
+					disableProxy().then(LaunchNeededProxy);
+				}
             });
             break;
         case "getUrl":
@@ -242,7 +256,7 @@ const HEADERS_RULE = {
   "action": {
     "type": "modifyHeaders",
     "requestHeaders": [
-      { "header": "User-Agent", "operation": "set", "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36" },
+      { "header": "User-Agent", "operation": "set", "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36" },
 	  { "header": "Accept-Language", "operation": "set", "value": "ru,en-US,en;q=0.9" }
     ]
   },
@@ -451,6 +465,7 @@ function RemoveConflicts() {
 	  });
 }
 
+
 function GetExtensions() {
 	ExtensionList = [];
 	conflictList = [];
@@ -471,4 +486,5 @@ function GetExtensions() {
 }
 
 setInterval(GetExtensions, 5000);
+setInterval(UpdateBadge, 1000);
 GetExtensions();
